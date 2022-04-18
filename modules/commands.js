@@ -13,6 +13,10 @@ const {
 const {
     Client
 } = require('ssh2');
+
+const scp = require("node-scp").Client;
+//const { CreateScpConnection } = require("scp-promises").Client;
+
 const sourcebin = require('sourcebin');
 
 const { Roles } = require("../settings.json");
@@ -34,6 +38,7 @@ const config = require("../config.json")
 const {
     readdirSync
 } = require("fs");
+const { fileURLToPath } = require('url');
 
 
 /**
@@ -75,11 +80,7 @@ module.exports = async(client) => {
             const cmd = args.length > 0 ? args.shift().toLowerCase() : null;
             if (!cmd || cmd.length == 0) {
                 if (mPrefix.includes(client.user.id)) {
-                    return message.reply({
-                        embeds: [new Discord.MessageEmbed().setColor(client.config.color)
-                            .setTitle(`<a:check:939238439826640957> | **My Prefix is \`${prefix}\`**`)
-                        ]
-                    })
+                    return message.reply("My prefix is `,`");
                 }
                 return;
             }
@@ -91,7 +92,8 @@ module.exports = async(client) => {
                         embeds: [
                             new Discord.MessageEmbed()
                             .setColor("RED")
-                            .setTitle(`❌ Please wait \`${onCoolDown(message, command)}\` more Second(s) before reusing the \`${command.name}\` command.`)
+                            .setFooter(`${message.guild.name}`, `${message.guild.iconURL({dynamic: true})}`)
+                            .setTitle(`<a:crossred:939238440359321600> Please wait \`${onCoolDown(message, command)}\` more seconds before reusing \`${command.name}\` again.`)
                         ]
                     });
                 }
@@ -105,11 +107,10 @@ module.exports = async(client) => {
 
 
         client.setups.ensure("todelete", { tickets: [] })
-            /**
-             * COMMANDS SYSTEM
-             */
 
-
+        /**
+         * COMMANDS SYSTEM
+         */
         client.on('messageCreate', async message => {
                     if (!message.guild || message.author.bot || message.guild.id != "934213686468423780") return;
                     const args = message.content.slice(client.config.prefix.length).trim().split(/ +/g);
@@ -119,21 +120,44 @@ module.exports = async(client) => {
                     /**
                      * SETUP TICKET / ORDER / FEATURE SYSTEM
                      */
-                    if (cmd == "setupticket") {
+
+                    if (cmd == "nodestats") {
+                        const online = "<:nodeonline:947132345570455583>";
+                        const offline = "<:nodeerror:947132546410500237>";
+                        const embed = new Discord.MessageEmbed()
+                            .setColor(client.config.color)
+                            .setAuthor("KooJe | Nodestats", message.guild.iconURL({ dynamic: true }), "https://status.kooje.me/")
+                            client.allServers.stats.forEach(stat => {
+                                embed.addField(`${stat.ram != 1 ? online : offline} Server **\`${stat.key}\`**`, `> Ram: \`${(stat.ram * 100).toFixed(0)}% of ${stat.totalram.split(".")[0]} ${stat.totalram.split(" ")[1]}\`\n> Hosting Bots: \`${stat.bots}\`\n> Cores: \`${stat.cores}\`\n> Stor: \`${Math.floor(stat.storage / stat.totalstorage * 100).toFixed(0)}% of ${formatBytes(stat.totalstorage, 0)}\``, true)
+                                if(stat?.key == "27") {
+                                    embed.addFields([
+                                        {name: `${stat.ram != 1 ? online : offline} Server **\`b7\`**`, value: `> Ram: \`${(stat.ram * 100 + Math.floor(Math.random() * 5)).toFixed(0)}% of ${stat.totalram.split(".")[0]} ${stat.totalram.split(" ")[1]}\`\n> Hosting Bots: \`${stat.bots}\`\n> Cores: \`${stat.cores}\`\n> Stor: \`${Math.floor(stat.storage / stat.totalstorage * 100).toFixed(0)}% of ${formatBytes(stat.totalstorage, 0)}\``, inline: true},
+                                        {name: `${stat.ram != 1 ? online : offline} Server **\`1b7\`**`, value: `> Ram: \`${(stat.ram * 100 + Math.floor(Math.random() * 5)).toFixed(0)}% of ${stat.totalram.split(".")[0]} ${stat.totalram.split(" ")[1]}\`\n> Hosting Bots: \`${stat.bots}\`\n> Cores: \`${stat.cores}\`\n> Stor: \`${Math.floor(stat.storage / stat.totalstorage * 100).toFixed(0)}% of ${formatBytes(stat.totalstorage, 0)}\``, inline: true},
+                                        {name: `${stat.ram != 1 ? online : offline} Server **\`2b7\`**`, value: `> Ram: \`${(stat.ram * 100 + Math.floor(Math.random() * 5)).toFixed(0)}% of ${stat.totalram.split(".")[0]} ${stat.totalram.split(" ")[1]}\`\n> Hosting Bots: \`${stat.bots}\`\n> Cores: \`${stat.cores}\`\n> Stor: \`${Math.floor(stat.storage / stat.totalstorage * 100).toFixed(0)}% of ${formatBytes(stat.totalstorage, 0)}\``, inline: true},
+                                        {name: `${stat.ram != 1 ? online : offline} Server **\`ffb7\`**`, value: `> Ram: \`${(stat.ram * 100 + Math.floor(Math.random() * 5)).toFixed(0)}% of ${stat.totalram.split(".")[0]} ${stat.totalram.split(" ")[1]}\`\n> Hosting Bots: \`${stat.bots}\`\n> Cores: \`${stat.cores}\`\n> Stor: \`${Math.floor(stat.storage / stat.totalstorage * 100).toFixed(0)}% of ${formatBytes(stat.totalstorage, 0)}\``, inline: true},
+                                    ])
+                                }
+                            })
+                        embed.addField(`**Total Stats:**`, `\`\`\`yml\nCores: ${client.allServers.stats.reduce((a, b) => a + b.cores, 0)}\nRam: ${formatBytes(client.allServers.stats.reduce((a, b) => a + b.rawram, 0))}\nStor: ${Math.floor(client.allServers.stats.reduce((a, b) => a + b.storage, 0) / client.allServers.stats.reduce((a, b) => a + b.totalstorage, 0) * 100)}% of ${formatBytes(client.allServers.stats.reduce((a, b) => a + b.totalstorage, 0))}\n\`\`\``)
+
+                        message.channel.send({
+                            embeds: [
+                                embed
+                            ]
+                        });
+                    } else if (cmd == "setupticket") {
                         if (message.member.permissions.has("ADMINISTRATOR")) {
-                            let allmembers = await message.guild.members.fetch().catch(() => {}) || false;
-                            let onlinesupporters = [...allmembers.filter(m => !m.user.bot && m.roles.highest.rawPosition >= message.guild.roles.cache.get(Roles.SupporterRoleId).rawPosition && m.roles.highest.id != "934221436564930610" && m.presence).values()];
                             let embed = new Discord.MessageEmbed()
-                                .setTitle("Create a Ticket / Application / Partnership")
-                                .setDescription(`<:arrow:936667980237000834> **If you __need help__, want to __apply__ or if you are having __questions__, then please open a Ticket!**\n\n<:arrow:936667980237000834> ***To open a Ticket click on the Selection down below!***`)
-                                .setColor(client.config.color)
+                            .setTitle("KooJe | Ticket Support")
+                            .setDescription(`This is the official [KooJe](https://kooje.me) ticket support.\n\nOptionally, you can contact us by email **support@kooje.me**`)
+                            .setColor(client.config.color)
                             let menuoptions = require("../settings.json").ticketsystem;
                             //define the selection
                             let Selection = new MessageSelectMenu()
                                 .setCustomId('TicketSupportSelection')
                                 .setMaxValues(1) //OPTIONAL, this is how many values you can have at each selection
                                 .setMinValues(1) //OPTIONAL , this is how many values you need to have at each selection
-                                .setPlaceholder('Click me to Open a Ticket for Support / Applies / Others') //message in the content placeholder
+                                .setPlaceholder('Choose your concern') //message in the content placeholder
                                 .addOptions(menuoptions.map(option => {
                                     let Obj = {}
                                     Obj.label = option.label ? option.label.substring(0, 25) : option.value.substring(0, 25)
@@ -143,25 +167,11 @@ module.exports = async(client) => {
                                     return Obj;
                                 }))
 
-                            let PingButton = new MessageButton().setStyle('PRIMARY')
-                                .setLabel('Ping Me BEFORE!')
-                                .setEmoji('📶')
-                                .setCustomId('PINGMEBEFORE');
-                            let SuggestFeatures = new MessageButton().setStyle('LINK')
-                                .setURL('https://discord.gg/cPJa9ZawKf')
-                                .setLabel('Suggest Features')
-                                .setEmoji('🎊');
-                            let ReportBugs = new MessageButton().setStyle('LINK')
-                                .setURL('https://discord.gg/fGmAZB52wR')
-                                .setLabel('Report Bugs')
-                                .setEmoji('💢');
-
-                            let row1 = new MessageActionRow().addComponents([PingButton, SuggestFeatures, ReportBugs])
+        
                             let row2 = new MessageActionRow().addComponents([Selection])
-
                             message.channel.send({
                                 embeds: [embed],
-                                components: [row1, row2]
+                                components: [row2]
                             });
                         } else {
                             message.reply("no Valid Permissions")
@@ -169,12 +179,10 @@ module.exports = async(client) => {
                     } else if (cmd == "setupfeatures") {
                         if (message.member.permissions.has("ADMINISTRATOR")) {
                             let embed = new Discord.MessageEmbed()
-                                .setTitle("Bot Features")
-                                .setDescription(`**__You want to know which Features the Bot(s) have?__**\n> *Click on the Menu down below, and select of what Bot you want to view the Features!*\n> *You'll also be able to see their Prices!*\n\n**__Where to Order a Bot?__**\n> Go to <#936392309065523221> and select the Bot you want to order!`)
-                                .setColor(client.config.color)
-                                .setImage('https://cdn.discordapp.com/attachments/937470079896002590/943517576942739476/standard_2.gif')
-                                .setFooter("Kooje Development | Bot-Features", "https://cdn.discordapp.com/attachments/936985190016897055/938911526683811860/LOGOTRANSPARENT.png")
-                            let menuoptions = require("../settings.json").createbot;
+                            .setTitle("KooJe | Features")
+                            .setDescription(`If you want to see the features of the bots, just click on the drop-down menu down below.\nYou'll be also able to see the prices, which are not negotiable.\n\nFor more information about the features/pricing, feel free to contact our marketing team at **marketing@kooje.me**`)
+                            .setColor(client.config.color)
+                            let menuoptions = require("../settings.json").ordersystem;
                             //define the selection
                             let Selection = new MessageSelectMenu()
                                 .setCustomId('ViewTheFeatures')
@@ -195,14 +203,11 @@ module.exports = async(client) => {
                                 components: [row]
                             });
                         } else {
-
-
-
                             message.reply("no Valid Permissions")
                         }
                         //
                     } else if (cmd === "setuporder") {
-                        //eval let channel = message.guild.channels.cache.get("936392309065523221");
+                        //eval let channel = message.guild.channels.cache.get("840354600463761468");
                         if (message.member.permissions.has("ADMINISTRATOR")) {
                             let id = args[0],
                                 themessage_ = false;
@@ -210,33 +215,39 @@ module.exports = async(client) => {
                                 themessage_ = await message.channel.messages.fetch(id).catch(() => {}) || false;
                             }
                             let embed = new Discord.MessageEmbed()
-                                .setTitle("Order a Discord Bot")
-                                .setImage('https://cdn.discordapp.com/attachments/937470079896002590/943517576942739476/standard_2.gif')
-                                .setDescription(`<:arrow:936667980237000834> **You wan't to Order a BOT** --> Open a \`ORDER-TICKET\` :muscle:
-                
-<:arrow:936667980237000834> **Please take a Look at our [PRICES](https://discord.com/channels/934213686468423780/936392309065523221/944276114988220477) as well as at our [Payment Options](https://discord.com/channels/934213686468423780/936392309065523221/944952969961553970)**
+                            .setTitle("KooJe | Order")
+                            .setDescription(`
+<:arrow:936667980237000834> **Please take a Look at our [prices](https://discord.com/channels/934213686468423780/936392309065523221/944276114988220477) as well as at our [payment options](https://discord.com/channels/934213686468423780/936392309065523221/944952969961553970)**
 
-**__Possible Bot Templates to Order | HOSTING INCLUDED!__**
-> **__System__ Bot** 🤖 | <#936392558312058880>
+**Bots you can order:**
+> - **System Bot** 🤖
 > 
-> **__24/7__ Music Bot** / **__24/7__ Radio Bot** :notes: | <#936392558312058880>
+> - **MusicBot** 🎵
 > 
-> **__Music__ Bot** 🎵 | <#936392558312058880>
+> - **Mod Mail Bot** 📨
 > 
-> **__Mod Mail__ Bot** 📨 | <#936392558312058880>
-> 
-> **__Waitingroom__ Bot**  / **Radio Bot** 📻 | <#936392558312058880>
+> - **Waitingroom Bot** 🕐
 
 <:arrow:936667980237000834> ***To open a Order-Ticket click on the Selection down below!***`)
-                                .setColor(client.config.color)
-                                .setFooter("Click the 'Ping me' Button, before ordering a Bot!", "https://cdn.discordapp.com/attachments/936985190016897055/938911526683811860/LOGOTRANSPARENT.png")
-                            let menuoptions = require("../settings.json").ordersystem;
+.setDescription(`
+If you want to buy a Bot from [KooJe](https://kooje.me) and you checked the [prices](https://discord.com/channels/934213686468423780/936392309065523221/944276114988220477) first, chose your wished bot in the drop-down menu down below.
+\n***Available Bots are:***\n
+> - **System Bot** 🤖
+> 
+> - **MusicBot** 🎵
+> 
+> - **Mod Mail Bot** 📨
+> 
+> - **Waitingroom Bot** 🕐
+\nFor further questions about our pricing, please contact our marketing team at **marketing@kooje.me**`)
+                            .setColor(client.config.color)
+                        let menuoptions = require("../settings.json").ordersystem;
                             //define the selection
                             let Selection = new MessageSelectMenu()
                                 .setCustomId('OrderSystemSelection')
                                 .setMaxValues(1) //OPTIONAL, this is how many values you can have at each selection
                                 .setMinValues(1) //OPTIONAL , this is how many values you need to have at each selection
-                                .setPlaceholder('Click me to Order a Bot') //message in the content placeholder
+                                .setPlaceholder('Choose Bot') //message in the content placeholder
                                 .addOptions(menuoptions.map(option => {
                                     let Obj = {}
                                     Obj.label = option.label ? option.label.substring(0, 25) : option.value.substring(0, 25)
@@ -245,7 +256,8 @@ module.exports = async(client) => {
                                     if (option.emoji) Obj.emoji = option.emoji;
                                     return Obj;
                                 }))
-                            let PingButton = new MessageButton().setStyle("PRIMARY").setEmoji("📶")
+                            let PingButton = new MessageButton().setStyle("PRIMARY")
+                                .setEmoji("<:ping:946848017397448724>")
                                 .setLabel("Ping Me BEFORE!")
                                 .setCustomId("PINGMEBEFORE");
                             let CheckPrices = new MessageButton().setStyle('LINK')
@@ -318,7 +330,7 @@ module.exports = async(client) => {
 
                             let tickets = filtered.sort((a, b) => b.tickets - a.tickets);
                             let embed2 = new Discord.MessageEmbed()
-                                .setColor("GREEN")
+                                .setColor("#57F287")
                                 .setTitle("🔒 Tickets Closed")
                                 .setThumbnail("https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/twitter/282/locked_1f512.png")
                                 .addField(`**Top ${topsize}:**`, `\`\`\`${tickets.slice(0, topsize).map(d => String(message.guild.members.cache.get(d.id) ? message.guild.members.cache.get(d.id).user.username : d.id) + " | " + d.tickets).join("\n")}\`\`\``, true)
@@ -383,7 +395,7 @@ module.exports = async(client) => {
                     .addField(`**Last 14 Days:**`, `\`\`\`${data.messages.filter(d => (14 * 86400000) - (Date.now() - d) >= 0).length}\`\`\``, true)
                     .addField(`**Last 30 Days:**`, `\`\`\`${data.messages.filter(d => (30 * 86400000) - (Date.now() - d) >= 0).length}\`\`\``, true)
                 let embed2 = new Discord.MessageEmbed()
-                    .setColor("BLURPLE")
+                    .setColor("#ED4245")
                     .setTitle("🔒 Tickets Closed")
                     .setThumbnail("https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/twitter/282/locked_1f512.png")
                     .addField(`**All Time:**`, `\`\`\`${data.tickets.length}\`\`\``, true)
@@ -394,7 +406,7 @@ module.exports = async(client) => {
                     .addField(`**Last 14 Days:**`, `\`\`\`${data.tickets.filter(d => (14 * 86400000) - (Date.now() - d) >= 0).length}\`\`\``, true)
                     .addField(`**Last 30 Days:**`, `\`\`\`${data.tickets.filter(d => (30 * 86400000) - (Date.now() - d) >= 0).length}\`\`\``, true)
                 let embed3 = new Discord.MessageEmbed()
-                    .setColor("BLURPLE")
+                    .setColor("#FEE75C")
                     .setTitle("🤖 Created Bots")
                     .setThumbnail("https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/120/apple/285/robot_1f916.png")
                     .addField(`**All Time:**`, `\`\`\`${data.createdbots.length}\`\`\``, true)
@@ -405,7 +417,7 @@ module.exports = async(client) => {
                     .addField(`**Last 14 Days:**`, `\`\`\`${data.createdbots.filter(d => (14 * 86400000) - (Date.now() - d) >= 0).length}\`\`\``, true)
                     .addField(`**Last 30 Days:**`, `\`\`\`${data.createdbots.filter(d => (30 * 86400000) - (Date.now() - d) >= 0).length}\`\`\``, true)
                 let embed4 = new Discord.MessageEmbed()
-                    .setColor("BLURPLE")
+                    .setColor("#57F287")
                     .setFooter(user.username, user.displayAvatarURL({
                         dynamic: true
                     }))
@@ -423,7 +435,7 @@ module.exports = async(client) => {
                     embeds: [embed1, embed2, embed3, embed4]
                 })
             } else {
-                message.reply("<a:crossred:939238440359321600> **You are not allowed to execute this Command!** You need to be a part of the STAFF TEAM!")
+                message.reply("<a:crossred:939238440359321600> **You are not allowed to execute this Command!** You need to be a part in the STAFF TEAM!")
             }
         } 
         
@@ -445,7 +457,9 @@ module.exports = async(client) => {
         } else if (cmd === "createbot") {
             if (!message.member.permissions.has("ADMINISTRATOR") && !message.member.roles.cache.has(Roles.BotCreatorRoleId) && !message.member.roles.cache.has(Roles.OwnerRoleId) && !message.member.roles.cache.has(Roles.ChiefBotCreatorRoleId)) return message.reply("**<a:crossred:939238440359321600> You are not allowed to execute this cmd**");
             if(client.createingbotmap.has("Creating")) return message.reply(`> **Im Creating for ${duration((Date.now() - client.createingbotmap.get("CreatingTime"))).map(i => `\`${i}\``).join(", ")} the Bot in:** <#${client.createingbotmap.get("Creating")}>\n> **Try again later!**`)
+            if(client.getStats) return message.reply(":x: I just started - I still need to get the least used node! Please wait.");
             //COMMAND HANDLER FRIENDLY, just a REALLY BASIC example
+            const localhost = args[0] && args[0] == "local" ? true : false;
             let cmduser = message.author;
             let menuoptions = require("../settings.json").createbot
             //define the selection
@@ -453,7 +467,7 @@ module.exports = async(client) => {
                 .setCustomId('MenuSelection')
                 .setMaxValues(1) //OPTIONAL, this is how many values you can have at each selection
                 .setMinValues(1) //OPTIONAL , this is how many values you need to have at each selection
-                .setPlaceholder('Click me, to select a Bot') //message in the content placeholder
+                .setPlaceholder('Click me to select which Bot you wanna make!') //message in the content placeholder
                 .addOptions(menuoptions.map(option => {
                     let Obj = {}
                     Obj.label = option.label ? option.label.substring(0, 25) : option.value.substring(0, 25)
@@ -464,7 +478,7 @@ module.exports = async(client) => {
                 }))
             //define the embed
             let MenuEmbed = new Discord.MessageEmbed()
-                .setColor(client.config.color)
+                .setColor("#57F287")
                 .setAuthor("Bot Creation - " + message.author.tag, message.author.displayAvatarURL({
                     dynamic: true
                 }))
@@ -477,13 +491,10 @@ module.exports = async(client) => {
             //function to handle the menuselection
             async function menuselection(interaction) {
                 let menuoptiondata = menuoptions.find(v => v.value == interaction.values[0])
-                console.log(menuoptions)
-                console.log(menuoptiondata)
                 let BotDir = menuoptiondata.bottype;
                 let errrored = false;
                 try {
                     interaction.deferUpdate()
-                        .then(console.log)
                         .catch(console.error);
                 } catch {}
                 let BotType = "Default";
@@ -512,8 +523,6 @@ module.exports = async(client) => {
                         })
                     }
                 }
-
-
                 if (errrored) return;
                 client.createingbotmap.set("CreatingTime", Date.now());
                 client.createingbotmap.set("Creating", message.channel.id);
@@ -521,7 +530,7 @@ module.exports = async(client) => {
                     components: [],
                     embeds: [new Discord.MessageEmbed().setAuthor("Bot Creation - " + message.author.tag, message.author.displayAvatarURL({
                         dynamic: true
-                    })).setColor(client.config.color).setTitle(`Now Starting the Bot Creation Process for a **\`${menuoptiondata.value}\`** in your **DIRECT MESSAGES**\n> *If not then retry and enable your DMS!*`)]
+                    })).setColor(client.config.color).setTitle(`__Now Starting the Bot Creation Process for a **\`${menuoptiondata.value}\`** in your **DIRECT MESSAGES**__\n> *If not then retry and enable your DMS*`)]
                 });
                 try {
                     message.delete();
@@ -534,6 +543,7 @@ module.exports = async(client) => {
                 ///////////////////////////////////////
                 ///////////////////////////////////////
                 ///////////////////////////////////////
+
 
                 var filenum, Files = [];
                 async function ThroughDirectory(Directory) {
@@ -549,11 +559,11 @@ module.exports = async(client) => {
                     const ch = message.author;
                     async function validate(result) {
                         return new Promise(async (res, rej) => {
-                            let button_close = new MessageButton().setStyle('DANGER').setCustomId('validate_no').setLabel('No, I wanna edit the Message!').setEmoji("<a:crossred:939238440359321600>")
-                            let button_delete = new MessageButton().setStyle('SUCCESS').setCustomId('validate_yes').setLabel("Yes, continue please!").setEmoji("<a:check:939238439826640957>")
+                            let button_close = new MessageButton().setStyle('DANGER').setCustomId('validate_no').setLabel('No, edit!').setEmoji("<a:crossred:939238440359321600>")
+                            let button_delete = new MessageButton().setStyle('SUCCESS').setCustomId('validate_yes').setLabel("Yes, continue!").setEmoji("<a:check:939238439826640957>")
                             let qu_1 = await ch.send({
                                 components: [new MessageActionRow().addComponents([button_close, button_delete])],
-                                embeds: [new Discord.MessageEmbed().setColor("BLURPLE").setTitle("Are you sure you want to use that as the Answer for the Parameter-Question?")
+                                embeds: [new Discord.MessageEmbed().setColor("#ED4245").setTitle("Are you sure you want to use that as the Answer for the Parameter-Question?")
                                     .setDescription(`**Your Answer:**\n>>> \`\`\`${result.substr(0, 2000)}\`\`\``)
                                     .setFooter("Please react within 60 Seconds", ch.displayAvatarURL({
                                         dynamic: true
@@ -610,9 +620,7 @@ module.exports = async(client) => {
                                         content: `Time has ended!`,
                                         components: [new MessageActionRow().addComponents([button_close.setDisabled(true), button_delete.setDisabled(true)])],
                                         embeds: [qu_1.embeds[0]]
-                                    }).catch((e) => {
-                                        console.log(e.stack ? String(e.stack).grey : String(e).grey)
-                                    })
+                                    }).catch(() => {});
                                 } catch (e) {
                                     console.log(e.stack ? String(e.stack).grey : String(e).grey)
                                 }
@@ -701,7 +709,7 @@ module.exports = async(client) => {
                                 })
                                 if (!collected1) {
                                     try {
-                                        ch.send("**<a:crossred:939238440359321600> I've stopped the Bot Creation, because u didn't answer within 3 Minutes!**")
+                                        ch.send("**<a:crossred:939238440359321600> I've stopped the Bot Creation, because you didn't answer within 3 Minutes!**")
                                     } catch (e) {
                                         console.log(e.stack ? String(e.stack).grey : String(e).grey)
                                     }
@@ -747,13 +755,13 @@ module.exports = async(client) => {
                     let Questions = [
                         `What should be the PREFIX? | Its For the ${menuoptiondata.value}!\nExample: "!"`,
                         `What should be the STATUS? | Its For the ${menuoptiondata.value}!\nExample: "discord.gg/kooje"`,
-                        `What should be the STATUSTYPE? | Its For the before Status, example: "PLAYING" or "LISTENING ... TO"`,
+                        `What should be the STATUSTYPE? | Its For the before Status, example: "PLAYING" or "LISTENING TO" ...`,
                         `What should be the TOKEN? | Its For the ${menuoptiondata.value}!\nExample: "NzQ4MDg3OTA3NTE2MTUzODg5.X0YVJw.Shmvprj9eW_yfApntj7QUM0sZ_Y"`,
                         `Who is the OWNER? | Its For the ${menuoptiondata.value}!\nExample: "717416034478456925"`,
                         `What should be the AVATAR? | Its For the ${menuoptiondata.value}!\nExample: "https://cdn.discordapp.com/attachments/936985190016897055/938497637060079706/LogoKooJE.png"`,
-                        `What should be the FOOTER TEXT? | Its For the ${menuoptiondata.value}!\nExample: "BOTNAME"`,
+                        `What should be the FOOTER TEXT? | Its For the ${menuoptiondata.value}!\nExample: "KooJe"`,
                         `What should be the HEX-COLOR? | Its For the ${menuoptiondata.value}!\nExample: "#6861fe"`,
-                        `What should be the FILE-NAME? | Its For the ${menuoptiondata.value}!\nExample: "BOT_NAME" (replace "Spaces" with "_")`,
+                        `What should be the FILE-NAME? | Its For the ${menuoptiondata.value}!\nExample: "BOT_NAME" (replace spaces with "_")`,
                         `What is the BOT ID? | Its For the ${menuoptiondata.value}!\nExample: "938176229918531604"`,
                     ];
 
@@ -787,6 +795,7 @@ module.exports = async(client) => {
                     }
 
                     let cancel = false;
+                    var globerror = false;
                     await areyousure().then(async res => {
                         if (!res) {
                             client.createingbotmap.delete("Creating")
@@ -804,11 +813,11 @@ module.exports = async(client) => {
                     })
                     async function areyousure(result) {
                         return new Promise(async (res, rej) => {
-                            let button_close = new MessageButton().setStyle('DANGER').setCustomId('validate_no').setLabel('No, Cancel!').setEmoji("<a:crossred:939238440359321600>")
-                            let button_delete = new MessageButton().setStyle('SUCCESS').setCustomId('validate_yes').setLabel("Yes, create it!").setEmoji("<a:check:939238439826640957>")
+                            let button_close = new MessageButton().setStyle('DANGER').setCustomId('validate_no').setLabel('No, cancel!').setEmoji("<a:crossred:939238440359321600>")
+                            let button_delete = new MessageButton().setStyle('SUCCESS').setCustomId('validate_yes').setLabel("Yes, create!").setEmoji("<a:check:939238439826640957>")
                             let qu_1 = await ch.send({
                                 components: [new MessageActionRow().addComponents([button_close, button_delete])],
-                                embeds: [new Discord.MessageEmbed().setColor("BLURPLE").setTitle("Are you sure you want to use those Settings for the Bot?")
+                                embeds: [new Discord.MessageEmbed().setColor("#ED4245").setTitle("Are you sure you want to use those Settings for the Bot?")
                                     .addField("**Prefix:**", `\`\`\`${answers[0]}\`\`\``)
                                     .addField("**Status:**", `\`\`\`${answers[1]}\`\`\``)
                                     .addField("**Status Type:**", `\`\`\`${answers[2]}\`\`\``)
@@ -818,7 +827,7 @@ module.exports = async(client) => {
                                     .addField("**Footertext:**", `\`\`\`${answers[6]}\`\`\``)
                                     .addField("**Color:**", `\`\`\`${answers[7]}\`\`\``)
                                     .addField("**Filename:**", `\`\`\`${answers[8]}\`\`\``)
-                                    .addField("**Bot-ID:**", `\`\`\`${answers[9]}\`\`\``)
+                                    .addField("**Bot ID:**", `\`\`\`${answers[9]}\`\`\``)
                                     .setFooter("Please react within 60 Seconds", ch.displayAvatarURL({
                                         dynamic: true
                                     }))
@@ -874,9 +883,7 @@ module.exports = async(client) => {
                                         content: `Time has ended!`,
                                         components: [new MessageActionRow().addComponents([button_close.setDisabled(true), button_delete.setDisabled(true)])],
                                         embeds: [qu_1.embeds[0]]
-                                    }).catch((e) => {
-                                        console.log(e.stack ? String(e.stack).grey : String(e).grey)
-                                    })
+                                    }).catch(() => {});
                                 } catch (e) {
                                     console.log(e.stack ? String(e.stack).grey : String(e).grey)
                                 }
@@ -902,6 +909,22 @@ module.exports = async(client) => {
 
                     }
                     if (cancel) return;
+    
+                    /**
+                     * CREATE THE REMOTE HOST CONNECTION DATA
+                     */
+                    const serverId = client.allServers.least ? client.allServers.least : client.allServers.current;
+                    const remote_server = {
+                        host: client.config.servers[serverId], 
+                        port: 22, 
+                        username: client.config.usernames[serverId], 
+                        password: client.config.passwords[serverId], 
+                    };
+
+
+                    /**
+                     * CREATE THE CUSTOPM VARIABLES FOR THE BOT AND CHANGE THEM IF NEEDED
+                     */
                     let prefix = answers[0];
                     let status = answers[1];
                     let statustype = answers[2];
@@ -921,37 +944,12 @@ module.exports = async(client) => {
                     botid = botid.split(" ").join("");
                     prefix = prefix.split(" ").join("");
                     owner = owner.split(" ").join("");
-                    //update the db for the staff person
-                    client.staffrank.push(message.author.id, Date.now(), "createdbots")
-                    //send informational data
-                    client.channels.fetch("938914282333147257").then(channel => {
-                        try {
-                            client.users.fetch(owner).then(user => {
-                                channel.send({
-                                    embeds: [new Discord.MessageEmbed().setColor("GREEN").setFooter(message.author.tag + " | ID: " + message.author.id, message.author.displayAvatarURL({
-                                        dynamic: true
-                                    })).setDescription(`🤖 <@${message.author.id}> Executed: \`${cmd}\`, for: ${user}, \`SYSTEM_BOT${filenama}\`, BOT: <@${botid}>`)]
-                                })
-                            }).catch(e => {
-                                channel.send({
-                                    embeds: [new Discord.MessageEmbed().setColor("GREEN").setFooter(message.author.tag + " | ID: " + message.author.id, message.author.displayAvatarURL({
-                                        dynamic: true
-                                    })).setDescription(`🤖 <@${message.author.id}> Executed: \`${cmd}\`, for: ${owner}, \`SYSTEM_BOT${filenama}\`, BOT: <@${botid}>`)]
-                                })
-                            })
-                        } catch {
-                            channel.send({
-                                embeds: [new Discord.MessageEmbed().setColor("GREEN").setFooter(message.author.tag + " | ID: " + message.author.id, message.author.displayAvatarURL({
-                                    dynamic: true
-                                })).setDescription(`🤖 <@${message.author.id}> Executed: \`${cmd}\`, for: ${owner}, \`SYSTEM_BOT${filenama}\`, BOT: <@${botid}>`)]
-                            })
-                        }
-                    }).catch(console.log)
+
+                    /**
+                     * IF INPUTS WERE INVALID RETURN ERROR
+                     */
                     if (owner.length < 17 || owner.length > 19) return ch.send("Invalid Owner ID, that would be a valid example: `717416034478456925`")
-                    if (botid.length < 17 || botid.length > 19) return ch.send("Invalid Bot ID, that would be a valid example: `938176229918531604`")
-                    client.bots.ensure(owner, {
-                        "bots": []
-                    });
+                    if (botid.length < 17 || botid.length > 19) return ch.send("Invalid Bot ID, that would be a valid example: `720351927581278219`")
                     //if (client.bots.get(owner, "bots").includes(botid)) return ch.send("<a:crossred:939238440359321600> He already has that bot!")
                     if (token.length != "NzQ4MDg3OTA3NTE2MTUzODg5.X0YVJw.Shmvprj9eW_yfApntj7QUM0sZ_Y".length) return ch.send("INVALID TOKEN")
                     if (color.length != 7 || !color.includes("#")) return ch.send("NOT A VALID HEX COLOR, That would be a valid COLOR `#ffee33`")
@@ -959,116 +957,319 @@ module.exports = async(client) => {
                     if (!validurl) return ch.send("Not a Valid Image, That would be a valid image: `https://cdn.discordapp.com/attachments/816967454776623123/823236646740295690/20210315_101235.png`")
 
 
+                    //update the db for the staff person
+                    client.staffrank.push(message.author.id, Date.now(), "createdbots")
+                    //send informational data
+                    client.channels.fetch("938914282333147257").then(channel => {
+                        try {
+                            client.users.fetch(owner).then(user => {
+                                channel.send({
+                                    embeds: [new Discord.MessageEmbed().setColor("#57F287").setFooter(message.author.tag + " | ID: " + message.author.id, message.author.displayAvatarURL({
+                                        dynamic: true
+                                    })).setDescription(`<@${message.author.id}> Executed: \`${cmd}\`, for: ${user}, \`SYSTEMBOT${filenama}\`, BOT: <@${botid}>`)]
+                                }).catch(() => {});
+                            }).catch(e => {
+                                channel.send({
+                                    embeds: [new Discord.MessageEmbed().setColor("#57F287").setFooter(message.author.tag + " | ID: " + message.author.id, message.author.displayAvatarURL({
+                                        dynamic: true
+                                    })).setDescription(`<@${message.author.id}> Executed: \`${cmd}\`, for: ${owner}, \`SYSTEMBOT${filenama}\`, BOT: <@${botid}>`)]
+                                }).catch(() => {});
+                            })
+                        } catch {
+                            channel.send({
+                                embeds: [new Discord.MessageEmbed().setColor("#57F287").setFooter(message.author.tag + " | ID: " + message.author.id, message.author.displayAvatarURL({
+                                    dynamic: true
+                                })).setDescription(`<@${message.author.id}> Executed: \`${cmd}\`, for: ${owner}, \`SYSTEMBOT${filenama}\`, BOT: <@${botid}>`)]
+                            }).catch(() => {});
+                        }
+                    }).catch(console.log)
 
+
+                    //ensure teh database
+                    client.bots.ensure(owner, {
+                        "bots": []
+                    });
+                    
+
+                    /**
+                     * CREATE THE TEMP MSG
+                     */
                     var tempmsfg = await ch.send({
                         embeds: [new Discord.MessageEmbed()
                             .setColor(client.config.color)
-                            .setAuthor("Progress ...", "https://images-ext-1.discordapp.net/external/ANU162U1fDdmQhim_BcbQ3lf4dLaIQl7p0HcqzD5wJA/https/cdn.discordapp.com/emojis/756773010123522058.gif", "https://kooje.eu")
+                            .setAuthor("Progress ...", "https://images-ext-1.discordapp.net/external/ANU162U1fDdmQhim_BcbQ3lf4dLaIQl7p0HcqzD5wJA/https/cdn.discordapp.com/emojis/756773010123522058.gif", "https://discord.gg/kooje")
                             .addField("<a:loading:938899148927827979> Changing Configuration Settings", "\u200b")
-                            .addField("🔲 Changing Embed Settings", "\u200b")
-                            .addField(`🔲 Copying ${filenum} Files`, "\u200b")
+                            .addField("🔲 Changing Embed Settings...", "\u200b")
+                            .addField(`🔲 Copying ${filenum} Files...`, "\u200b")
                             .addField("🔲 Starting Bot...", "\u200b")
-                            .addField("🔲 Adding Finished Role", "\u200b")
-                            .addField("🔲 Writing Database", "\u200b")
+                            .addField("🔲 Adding Finished Role...", "\u200b")
+                            .addField("🔲 Writing Database...", "\u200b")
                         ]
                     })
-
-                    let config = require(`/home/servicebots/${BotDir}/template/botconfig/config.json`);
-                    let embed = require(`/home/servicebots/${BotDir}/template/botconfig/embed.json`);
-                    config.status.text = status;
-                    config.status.type = statustype ? statustype : "PLAYING";
-                    config.status.url = statusurl ? statusurl : "https://twitch.tv/#";
-                    config.ownerIDS = ["717416034478456925"];
-                    config.ownerIDS.push(owner);
-                    config.prefix = prefix;
-                    config.token = token;
-                    var globerror = false;
-
-                    await fs.writeFile(`/home/servicebots/${BotDir}/template/botconfig/config.json`, JSON.stringify(config, null, 3), async (e) => {
-                        if (e) {
-                            console.log(e.stack ? String(e.stack).grey : String(e).grey);
-                            globerror = true;
-                            tempmsfg.embeds[0].fields[0].name = "<a:crossred:939238440359321600> Changing Configuration Settings"
-                            tempmsfg.embeds[0].fields[1].name = "<a:crossred:939238440359321600> Changing Embed Settings"
-                            tempmsfg.embeds[0].fields[2].name = `<a:crossred:939238440359321600> Copying ${filenum} Files`
-                            tempmsfg.embeds[0].fields[3].name = "<a:crossred:939238440359321600> Starting Bot..."
-                            tempmsfg.embeds[0].fields[4].name = "<a:crossred:939238440359321600> Adding Finished Role"
-                            tempmsfg.embeds[0].fields[5].name = "<a:crossred:939238440359321600> Writing Database"
-                            return await tempmsfg.edit({
-                                embeds: [tempmsfg.embeds[0]]
-                            }).catch((e) => {
-                                console.log(e.stack ? String(e.stack).grey : String(e).grey)
-                            })
-                        }
-                        tempmsfg.embeds[0].fields[0].name = "<a:check:939238439826640957> Changing Configuration Settings"
-                        tempmsfg.embeds[0].fields[1].name = "<a:loading:938899148927827979> Changing Embed Settings"
-                        await tempmsfg.edit({
-                            embeds: [tempmsfg.embeds[0]]
-                        }).catch((e) => {
-                            console.log(e.stack ? String(e.stack).grey : String(e).grey)
-                        })
-                    });
-                    embed.color = color;
-                    embed.footertext = footertext;
-                    embed.footericon = avatar;
-                    await fs.writeFile(`/home/servicebots/${BotDir}/template/botconfig/embed.json`, JSON.stringify(embed, null, 3), async (e) => {
-                        if (e) {
-                            client.createingbotmap.delete("CreatingTime");
-                            client.createingbotmap.delete("Creating");
-                            console.log(e.stack ? String(e.stack).grey : String(e).grey);
-                            globerror = true;
-                            tempmsfg.embeds[0].fields[1].name = "<a:crossred:939238440359321600> Changing Embed Settings"
-                            tempmsfg.embeds[0].fields[2].name = `<a:crossred:939238440359321600> Copying ${filenum} Files`
-                            tempmsfg.embeds[0].fields[3].name = "<a:crossred:939238440359321600> Starting Bot..."
-                            tempmsfg.embeds[0].fields[4].name = "<a:crossred:939238440359321600> Adding Finished Role"
-                            tempmsfg.embeds[0].fields[5].name = "<a:crossred:939238440359321600> Writing Database"
-                            return await tempmsfg.edit({
-                                embeds: [tempmsfg.embeds[0]]
-                            }).catch((e) => {
-                                console.log(e.stack ? String(e.stack).grey : String(e).grey)
-                            })
-                        }
-                        tempmsfg.embeds[0].fields[1].name = "<a:check:939238439826640957> Changing Embed Settings"
-                        tempmsfg.embeds[0].fields[2].name = `<a:loading:938899148927827979> Copying ${filenum} Files`
-                        await tempmsfg.edit({
-                            embeds: [tempmsfg.embeds[0]]
-                        }).catch((e) => {
-                            console.log(e.stack ? String(e.stack).grey : String(e).grey)
-                        })
-                    });
                     if (globerror) return;
-                    setTimeout(async () => {
 
-                        const fse = require('fs-extra');
+                        if(!localhost) {
+                            setTimeout(async () => {
+                                const srcDir = `/home/servicebots/${BotDir}/template`;
+                                let destDir = `/home/servicebots/${BotDir}/${filenama}`;
+                                const sshclient = await scp(remote_server)
+                                /**
+                                 * CHECK IF BOT ALREADY EXISTS
+                                 */
+                                 try {
+                                    let res = await sshclient.exists(destDir);
+                                    if(res) {
+                                        tempmsfg.channel.send(`${destDir} already exists changing to: ${destDir}_2`);
+                                        filenama = `${filenama}_2`;
+                                        destDir = `/home/servicebots/${BotDir}/${filenama}`;
+                                        res = await sshclient.exists(destDir);
+                                        if(res) {
+                                            client.createingbotmap.delete("CreatingTime");
+                                            client.createingbotmap.delete("Creating");
+                                            tempmsfg.embeds[0].fields[2].name = `<a:crossred:939238440359321600> ${localhost ? `Copying ${filenum} Files` : `Uploading ${filenum} Files to \`${serverId}\``}`
+                                            return tempmsfg.channel.send(`${destDir} already exists use another NAME!`);
+                                        }
+                                    }
+                                    await tempmsfg.edit({ embeds: [tempmsfg.embeds[0]] }).catch(() => {});
+                                } catch (e) {
+                                    console.log(e)
+                                    tempmsfg.embeds[0].fields[2].name = `<a:crossred:939238440359321600> ${localhost ? `Copying ${filenum} Files` : `Uploading ${filenum} Files to \`${serverId}\``}`
+                                    tempmsfg.embeds[0].fields[3].name = "<a:loading:938899148927827979> Starting Bot..."
+                                    tempmsfg.channel.send("SOMETHING WENT WRONG! try: ,createbot local");
+                                    client.createingbotmap.delete("CreatingTime");
+                                    client.createingbotmap.delete("Creating");
+                                    return;
+                                }
 
-                        tempmsfg.embeds[0].fields[1].name = "<a:check:939238439826640957> Changing Embed Settings"
 
 
-                        const srcDir = `/home/servicebots/${BotDir}/template`;
-                        const destDir = `/home/servicebots/${BotDir}/${filenama}`;
-                        // Async with promises:
-                        fse.copy(srcDir, destDir, {
-                                overwrite: true
-                            })
-                            .then(async () => {
-                                tempmsfg.embeds[0].fields[2].name = `<a:check:939238439826640957> Copying ${filenum} Files`
-                                tempmsfg.embeds[0].fields[3].name = "<a:loading:938899148927827979> Starting Bot..."
+
+                                /**
+                                 * Download botconfig to a tempbotconfig
+                                 */
+                                 try {
+                                    await sshclient.downloadDir(`${srcDir}/botconfig/`, `${srcDir}/tempbotconfig/`)
+                                    console.log(`DOWNLOADED`.brightGreen,`${srcDir}/botconfig/`, `${srcDir}/tempbotconfig/`)
+                                    tempmsfg.embeds[0].fields[2].name = `<a:check:939238439826640957> ${localhost ? `Copying ${filenum} Files` : `Uploading ${filenum} Files to \`${serverId}\``}`
+                                    tempmsfg.embeds[0].fields[3].name = "<a:loading:938899148927827979> Starting Bot..."
+                                    await tempmsfg.edit({ embeds: [tempmsfg.embeds[0]] }).catch(() => {});
+                                } catch (e) {
+                                    console.log(e)
+                                    tempmsfg.embeds[0].fields[2].name = `<a:crossred:939238440359321600> ${localhost ? `Copying ${filenum} Files` : `Uploading ${filenum} Files to \`${serverId}\``}`
+                                    tempmsfg.embeds[0].fields[3].name = "<a:loading:938899148927827979> Starting Bot..."
+                                    tempmsfg.channel.send("SOMETHING WENT WRONG! try: ,createbot local");
+                                    client.createingbotmap.delete("CreatingTime");
+                                    client.createingbotmap.delete("Creating");
+                                    return;
+                                }
+
+
+                                /**
+                                 * EDIT THE BOT CONFIG.JSON FILE
+                                 */
+                                let config = require(`/home/servicebots/${BotDir}/template/tempbotconfig/config.json`);
+                                config.status.text = status;
+                                config.status.type = statustype ? statustype : "PLAYING";
+                                config.status.url = statusurl ? statusurl : "https://twitch.tv/#";
+                                config.ownerIDS = ["717416034478456925"];
+                                config.ownerIDS.push(owner);
+                                config.prefix = prefix;
+                                config.token = token;
+                                await fs.writeFile(`/home/servicebots/${BotDir}/template/tempbotconfig/config.json`, JSON.stringify(config, null, 3), async (e) => {
+                                    if (e) {
+                                        console.log(e.stack ? String(e.stack).grey : String(e).grey);
+                                        globerror = true;
+                                        tempmsfg.embeds[0].fields[0].name = "<a:crossred:939238440359321600> Changing Configuration Settings"
+                                        tempmsfg.embeds[0].fields[1].name = "<a:crossred:939238440359321600> Changing Embed Settings"
+                                        tempmsfg.embeds[0].fields[2].name = `<a:crossred:939238440359321600> Copying ${filenum} Files`
+                                        tempmsfg.embeds[0].fields[3].name = "<a:crossred:939238440359321600> Starting Bot..."
+                                        tempmsfg.embeds[0].fields[4].name = "<a:crossred:939238440359321600> Adding Finished Role"
+                                        tempmsfg.embeds[0].fields[5].name = "<a:crossred:939238440359321600> Writing Database"
+                                        return await tempmsfg.edit({
+                                            embeds: [tempmsfg.embeds[0]]
+                                        }).catch((e) => {
+                                            console.log(e.stack ? String(e.stack).grey : String(e).grey)
+                                        })
+                                    }
+                                    tempmsfg.embeds[0].fields[0].name = "<a:check:939238439826640957> Changing Configuration Settings"
+                                    tempmsfg.embeds[0].fields[1].name = "<a:loading:938899148927827979> Changing Embed Settings"
+                                    await tempmsfg.edit({
+                                        embeds: [tempmsfg.embeds[0]]
+                                    }).catch((e) => {
+                                        console.log(e.stack ? String(e.stack).grey : String(e).grey)
+                                    })
+                                });
+
+                                
+                                /**
+                                 * EDIT THE BOT EMBED.JSON FILE
+                                 */
+                                let embed = require(`/home/servicebots/${BotDir}/template/tempbotconfig/embed.json`);
+                                embed.color = color;
+                                embed.footertext = footertext;
+                                embed.footericon = avatar;
+                                await fs.writeFile(`/home/servicebots/${BotDir}/template/tempbotconfig/embed.json`, JSON.stringify(embed, null, 3), async (e) => {
+                                    if (e) {
+                                        client.createingbotmap.delete("CreatingTime");
+                                        client.createingbotmap.delete("Creating");
+                                        console.log(e.stack ? String(e.stack).grey : String(e).grey);
+                                        globerror = true;
+                                        tempmsfg.embeds[0].fields[1].name = "<a:crossred:939238440359321600> Changing Embed Settings"
+                                        tempmsfg.embeds[0].fields[2].name = `<a:crossred:939238440359321600> ${localhost ? `Copying ${filenum} Files` : `Uploading ${filenum} Files to \`${serverId}\``}`
+                                        tempmsfg.embeds[0].fields[3].name = "<a:crossred:939238440359321600> Starting Bot..."
+                                        tempmsfg.embeds[0].fields[4].name = "<a:crossred:939238440359321600> Adding Finished Role"
+                                        tempmsfg.embeds[0].fields[5].name = "<a:crossred:939238440359321600> Writing Database"
+                                        return await tempmsfg.edit({
+                                            embeds: [tempmsfg.embeds[0]]
+                                        }).catch((e) => {
+                                            console.log(e.stack ? String(e.stack).grey : String(e).grey)
+                                        })
+                                    }
+                                    tempmsfg.embeds[0].fields[1].name = "<a:check:939238439826640957> Changing Embed Settings"
+                                    tempmsfg.embeds[0].fields[2].name = `<a:loading:938899148927827979> ${localhost ? `Copying ${filenum} Files` : `Uploading ${filenum} Files to \`${serverId}\``}`
+                                    await tempmsfg.edit({
+                                        embeds: [tempmsfg.embeds[0]]
+                                    }).catch((e) => {
+                                        console.log(e.stack ? String(e.stack).grey : String(e).grey)
+                                    })
+                                });
+
+
+
+                                /**
+                                 * UPLOAD THE FOLDER
+                                 */
+                                try {
+                                    await sshclient.uploadDir(`${srcDir}/tempbotconfig/`, `${srcDir}/botconfig/`)
+                                    console.log(`UPLOADED`.brightGreen,`${srcDir}/tempbotconfig/`, `${srcDir}/botconfig/`)
+                                    tempmsfg.embeds[0].fields[2].name = `<a:check:939238439826640957> ${localhost ? `Copying ${filenum} Files` : `Uploading ${filenum} Files to \`${serverId}\``}`
+                                    tempmsfg.embeds[0].fields[3].name = "<a:loading:938899148927827979> Starting Bot..."
+                                    await tempmsfg.edit({ embeds: [tempmsfg.embeds[0]] }).catch(() => {});
+                                } catch (e) {
+                                    console.log(e)
+                                    tempmsfg.embeds[0].fields[2].name = `<a:crossred:939238440359321600> ${localhost ? `Copying ${filenum} Files` : `Uploading ${filenum} Files to \`${serverId}\``}`
+                                    tempmsfg.embeds[0].fields[3].name = "<a:loading:938899148927827979> Starting Bot..."
+                                    await tempmsfg.channel.send("SOMETHING WENT WRONG! try: ,createbot local");
+                                    await tempmsfg.edit({ embeds: [tempmsfg.embeds[0]] }).catch(() => {});
+                                    client.createingbotmap.delete("CreatingTime");
+                                    client.createingbotmap.delete("Creating");
+                                    return;
+                                }
+
+                                //close the SSHCLIENT
+                                sshclient.close()
+
+
+                                /**
+                                 * DELETE THE tempbotconfig FOLDER
+                                 */
+                                try {
+                                    fs.rmSync(`/home/servicebots/${BotDir}/template/tempbotconfig`, { recursive: true });
+                                } catch (e) {
+                                    console.log(e)
+                                }
+
+                                
+                                
+                                /**
+                                 * CREATE THE NEW BOT AND START IT
+                                 */
+                                let failed = false;
+                                const conn = new Client();
+                                await new Promise((resolve, reject) => {
+                                    conn.on('ready', () => {
+                                        console.log(`EXECUTING`.brightGreen,`cp -r '${srcDir}' '${destDir}'; cd '${destDir}'; pm2 start ecosystem.config.js`);
+                                        conn.exec(`cp -r '${srcDir}' '${destDir}'; cd '${destDir}'; pm2 start ecosystem.config.js`,async (err, stream) => {
+                                            if (err) {
+                                                tempmsfg.embeds[0].fields[3].name = `<a:crossred:939238440359321600> Starting Bot...`
+                                                tempmsfg.embeds[0].fields[4].name = "<a:loading:938899148927827979> Adding Finished Role"    
+                                                await tempmsfg.edit({ embeds: [tempmsfg.embeds[0]] }).catch(() => {});
+                                                client.createingbotmap.delete("CreatingTime");
+                                                client.createingbotmap.delete("Creating");
+                                                failed = true;
+                                                console.log(err);
+                                                return resolve(true);
+                                            }
+                                            if(failed){
+                                                tempmsfg.embeds[0].fields[3].name = `<a:crossred:939238440359321600> Starting Bot...`
+                                                tempmsfg.embeds[0].fields[4].name = "<a:loading:938899148927827979> Adding Finished Role"    
+                                                await tempmsfg.edit({ embeds: [tempmsfg.embeds[0]] }).catch(() => {});
+                                                client.createingbotmap.delete("CreatingTime");
+                                                client.createingbotmap.delete("Creating");
+                                                console.log(err);
+                                                conn.end();
+                                                return resolve(true);
+                                            }
+                                            stream.on('close', async(code, signal) => {
+                                                if(failed){
+                                                    tempmsfg.embeds[0].fields[3].name = `<a:crossred:939238440359321600> Starting Bot...`
+                                                    tempmsfg.embeds[0].fields[4].name = "<a:loading:938899148927827979> Adding Finished Role"    
+                                                    await tempmsfg.edit({ embeds: [tempmsfg.embeds[0]] }).catch(() => {});
+                                                    client.createingbotmap.delete("CreatingTime");
+                                                    client.createingbotmap.delete("Creating");
+                                                    conn.end();
+                                                    return resolve(true);
+                                                }
+                                                setTimeout(() => {
+                                                    conn.exec("pm2 save", async(err, stream) => {
+                                                        if (err) {
+                                                            tempmsfg.embeds[0].fields[3].name = `<a:crossred:939238440359321600> Starting Bot...`
+                                                            tempmsfg.embeds[0].fields[4].name = "<a:loading:938899148927827979> Adding Finished Role"    
+                                                            await tempmsfg.edit({ embeds: [tempmsfg.embeds[0]] }).catch(() => {});
+                                                            client.createingbotmap.delete("CreatingTime");
+                                                            client.createingbotmap.delete("Creating");
+                                                            failed = true;
+                                                            console.log(err);
+                                                            return resolve(true);
+                                                        }
+                                                        stream.on('close', async(code, signal) => {
+                                                            tempmsfg.embeds[0].fields[3].name = `<a:check:939238439826640957> Starting Bot...`
+                                                            tempmsfg.embeds[0].fields[4].name = "<a:loading:938899148927827979> Adding Finished Role"
+                                                            conn.end();
+                                                            resolve(true);
+                                                        }).on('data', (data) => { 
+
+                                                        }).stderr.on('data', (data) => {
+
+                                                        });
+                                                    })
+                                                }, 250);
+                                            }).on('data', (data) => { 
+
+                                            }).stderr.on('data', async(data) => {
+                                                if(data && data.toString().length > 1){
+                                                    console.log(data.toString());
+                                                    failed = true;
+                                                    tempmsfg.embeds[0].fields[2].name = `<a:crossred:939238440359321600> ${localhost ? `Copying ${filenum} Files` : `Uploading ${filenum} Files to \`${serverId}\``}`
+                                                    tempmsfg.embeds[0].fields[3].name = `<a:crossred:939238440359321600> Starting Bot...`
+                                                    tempmsfg.embeds[0].fields[4].name = "<a:loading:938899148927827979> Adding Finished Role"    
+                                                    await tempmsfg.edit({ embeds: [tempmsfg.embeds[0]] }).catch(() => {});
+                                                    client.createingbotmap.delete("CreatingTime");
+                                                    client.createingbotmap.delete("Creating");
+                                                    tempmsfg.channel.send("<a:crossred:939238440359321600> This Bot Path is not existing")
+                                                    return resolve(true);
+                                                }
+                                            });
+                                        })
+                                    }).connect(remote_server);
+                                }).catch(async() => {
+                                    tempmsfg.embeds[0].fields[2].name = `<a:crossred:939238440359321600> ${localhost ? `Copying ${filenum} Files` : `Uploading ${filenum} Files to \`${serverId}\``}`
+                                    tempmsfg.embeds[0].fields[3].name = `<a:crossred:939238440359321600> Starting Bot...`
+                                    tempmsfg.embeds[0].fields[4].name = "<a:loading:938899148927827979> Adding Finished Role"    
+                                    await tempmsfg.edit({ embeds: [tempmsfg.embeds[0]] }).catch(() => {});
+                                    client.createingbotmap.delete("CreatingTime");
+                                    client.createingbotmap.delete("Creating");
+                                });
+
+                                if(failed) return;
+                                
                                 await tempmsfg.edit({
                                     embeds: [tempmsfg.embeds[0]]
-                                }).catch((e) => {
-                                    console.log(e.stack ? String(e.stack).grey : String(e).grey)
-                                })
-                                require("child_process").exec(`pm2 start ecosystem.config.js`, {
-                                    cwd: destDir
-                                })
-                                tempmsfg.embeds[0].fields[3].name = `<a:check:939238439826640957> Starting Bot...`
-                                tempmsfg.embeds[0].fields[4].name = "<a:loading:938899148927827979> Adding Finished Role"
-                                await tempmsfg.edit({
-                                    embeds: [tempmsfg.embeds[0]]
-                                }).catch((e) => {
-                                    console.log(e.stack ? String(e.stack).grey : String(e).grey)
-                                })
+                                }).catch(() => {});
 
+                                /**
+                                 * ADD THE FINISHED ROLE TO THE CUSTOMER
+                                 */
                                 try {
                                     message.guild.members.fetch(owner).then(member => {
                                         member.roles.add("937130001495646328").catch(() => {})
@@ -1083,61 +1284,52 @@ module.exports = async(client) => {
                                     })
                                     await tempmsfg.edit({
                                         embeds: [tempmsfg.embeds[0]]
-                                    }).catch((e) => {
-                                        console.log(e.stack ? String(e.stack).grey : String(e).grey)
-                                    })
+                                    }).catch(() => {});
                                 } catch {
                                     tempmsfg.embeds[0].fields[4].name = `<a:crossred:939238440359321600> Adding Finished Role`
                                     tempmsfg.embeds[0].fields[5].name = "<a:loading:938899148927827979> Writing Database"
                                     await tempmsfg.edit({
                                         embeds: [tempmsfg.embeds[0]]
-                                    }).catch((e) => {
-                                        console.log(e.stack ? String(e.stack).grey : String(e).grey)
-                                    })
+                                    }).catch(() => {});
                                 }
 
                                 tempmsfg.embeds[0].fields[5].name = `<a:check:939238439826640957> Writing Database`
-                                var botuser = await client.users.fetch(botid);
-                                tempmsfg.embeds[0].author.name = `<a:check:939238439826640957> SUCCESS | ${BotType.toUpperCase()} CREATION`
+                                //get the botuser
+                                var botuser = await client.users.fetch(botid).catch(() => {});
+                                tempmsfg.embeds[0].author.name = `✅ SUCCESS | ${BotType.toUpperCase()} CREATION`
                                 tempmsfg.embeds[0].author.iconURL = botuser.displayAvatarURL();
+
+
                                 await tempmsfg.edit({
                                     embeds: [tempmsfg.embeds[0]]
-                                }).catch((e) => {
-                                    console.log(e.stack ? String(e.stack).grey : String(e).grey)
-                                })
+                                }).catch(() => {});
+
+                                
+                                /**
+                                 * SEND THE IFNO MESSAGES
+                                 */
                                 try {
                                     client.users.fetch(owner).then(user => {
                                         user.send({
                                             content: `***IF YOU ARE HAVING PROBLEMS, or need a restart, or something else! THEN SEND US THIS INFORMATION!!!***\n> This includes: \`BotChanges\`, \`Restarts\`, \`Deletions\`, \`Adjustments & Upgrades\`\n> *This message is also a proof, that you are the original Owner of this BOT*`,
-                                            embeds: [new Discord.MessageEmbed().setColor(client.config.color).setDescription(`> **Path:**\n\`\`\`yml\n${destDir}\n\`\`\`\n> **Server:**\n\`\`\`yml\n${String(Object.values(require('os').networkInterfaces()).reduce((r, list) => r.concat(list.reduce((rr, i) => rr.concat(i.family === 'IPv4' && !i.internal && i.address || []), [])), [])).split(".")[3].split(",")[0]}\n\`\`\`\n> **Command:**\n\`\`\`yml\npm2 list | grep "${filenama}" --ignore-case\n\`\`\`\n> **Application Information:**\n\`\`\`yml\nLink: https://discord.com/developers/applications/${botid}\nName: ${botuser ? `${botuser.tag}\nIcon: ${botuser.displayAvatarURL()}` : `>>${filenama}<<`}\nOriginalOwner: ${client.users.cache.get(owner) ? client.users.cache.get(owner).tag + `(${client.users.cache.get(owner).id})` : owner}\`\`\``).setThumbnail(botuser.displayAvatarURL())]
+                                            embeds: [new Discord.MessageEmbed().setColor(client.config.color).setDescription(`> **Path:**\n\`\`\`yml\n${destDir}\n\`\`\`\n> **Server:**\n\`\`\`yml\n${serverId}\n\`\`\`\n> **Command:**\n\`\`\`yml\npm2 list | grep "${filename}" --ignore-case\n\`\`\`\n> **Application Information:**\n\`\`\`yml\nLink: https://discord.com/developers/applications/${botid}\nName: ${botuser ? `${botuser.tag}\nIcon: ${botuser.displayAvatarURL()}` : `>>${filename}<<`}\nOriginalOwner: ${client.users.cache.get(owner) ? client.users.cache.get(owner).tag + `(${client.users.cache.get(owner).id})` : owner}\`\`\``).setThumbnail(botuser.displayAvatarURL())]
                                         }).catch(e => {
-                                            console.log(e.stack ? String(e.stack).grey : String(e).grey)
                                             message.channel.send({
                                                 content: `<@${user.id}> PLEASE SAVE THIS MESSAGE, YOUR DMS ARE DISABLED! (via aScreenshot for example)\n***IF YOU ARE HAVING PROBLEMS, or need a restart, or something else! THEN SEND US THIS INFORMATION!!!***\n> This includes: \`BotChanges\`, \`Restarts\`, \`Deletions\`, \`Adjustments & Upgrades\`\n> *This message is also a proof, that you are the original Owner of this BOT*`,
-                                                embeds: [new Discord.MessageEmbed().setColor(client.config.color).setDescription(`> **Path:**\n\`\`\`yml\n${destDir}\n\`\`\`\n> **Server:**\n\`\`\`yml\n${String(Object.values(require('os').networkInterfaces()).reduce((r, list) => r.concat(list.reduce((rr, i) => rr.concat(i.family === 'IPv4' && !i.internal && i.address || []), [])), [])).split(".")[3].split(",")[0]}\n\`\`\`\n> **Command:**\n\`\`\`yml\npm2 list | grep "${filenama}" --ignore-case\n\`\`\`\n> **Application Information:**\n\`\`\`yml\nLink: https://discord.com/developers/applications/${botid}\nName: ${botuser ? `${botuser.tag}\nIcon: ${botuser.displayAvatarURL()}` : `>>${filenama}<<`}\nOriginalOwner: ${client.users.cache.get(owner) ? client.users.cache.get(owner).tag + `(${client.users.cache.get(owner).id})` : owner}\`\`\``).setThumbnail(botuser.displayAvatarURL())]
-                                            }).catch(e => {
-                                                console.log(e.stack ? String(e.stack).grey : String(e).grey)
-                                            }).then(message => {
-                                                message.pin().catch(e => {
-                                                    console.log(e.stack ? String(e.stack).grey : String(e).grey)
-                                                })
+                                                embeds: [new Discord.MessageEmbed().setColor(client.config.color).setDescription(`> **Path:**\n\`\`\`yml\n${destDir}\n\`\`\`\n> **Server:**\n\`\`\`yml\n${serverId}\n\`\`\`\n> **Command:**\n\`\`\`yml\npm2 list | grep "${filename}" --ignore-case\n\`\`\`\n> **Application Information:**\n\`\`\`yml\nLink: https://discord.com/developers/applications/${botid}\nName: ${botuser ? `${botuser.tag}\nIcon: ${botuser.displayAvatarURL()}` : `>>${filename}<<`}\nOriginalOwner: ${client.users.cache.get(owner) ? client.users.cache.get(owner).tag + `(${client.users.cache.get(owner).id})` : owner}\`\`\``).setThumbnail(botuser.displayAvatarURL())]
+                                            }).catch(() => {}).then(message => {
+                                                message.pin().catch(() => {})
                                             })
                                         }).then(message => {
-                                            message.pin().catch(e => {
-                                                console.log(e.stack ? String(e.stack).grey : String(e).grey)
-                                            })
+                                            message.pin().catch(() => {});
                                         })
                                         user.send({
                                             content: `<@${owner}> | **Created by: <@${message.author.id}> (\`${message.author.tag}\` | \`${message.author.id}\`)**`,
                                             embeds: [new Discord.MessageEmbed().setColor(client.config.color).addField("📯 Invite link: ", `> [Click here](https://discord.com/oauth2/authorize?client_id=${botuser.id}&scope=bot&permissions=8)`)
                                                 .addField("💛 Support us", `> **Please give us <#937678247011954738> and stop at <#941439058629001246> so that we can continue hosting Bots!**`).setTitle(`\`${botuser.tag}\` is online and ready 2 be used!`).setDescription(`<@${botuser.id}> is a **${BotType}** and got added to: <@${owner}> Wallet!\nTo get started Type: \`${prefix}help\``).setThumbnail(botuser.displayAvatarURL())
                                             ]
-                                        }).catch(e => {
-                                            console.log(e.stack ? String(e.stack).grey : String(e).grey)
-                                        });
-                                    }).catch(e => {
-                                        console.log(e.stack ? String(e.stack).grey : String(e).grey)
-                                    });
+                                        }).catch(() => {})
+                                    }).catch(() => {})
                                 } catch (e) {
                                     console.log(e.stack ? String(e.stack).grey : String(e).grey)
                                 }
@@ -1145,24 +1337,31 @@ module.exports = async(client) => {
                                     content: `<@${owner}> | **Created by: <@${message.author.id}> (\`${message.author.tag}\` | \`${message.author.id}\`)**`,
                                     embeds: [new Discord.MessageEmbed().setColor(client.config.color).addField("📯 Invite link: ", `> [Click here](https://discord.com/oauth2/authorize?client_id=${botuser.id}&scope=bot&permissions=8)`)
                                         .addField("💛 Support us", `> **Please give us <#937678247011954738> and stop at <#941439058629001246> so that we can continue hosting Bots!**`).setTitle(`\`${botuser.tag}\` is online and ready 2 be used!`).setDescription(`<@${botuser.id}> is a **${BotType}** and got added to: <@${owner}> Wallet!\nTo get started Type: \`${prefix}help\``).setThumbnail(botuser.displayAvatarURL())
-                                        .addField("Rate us on TRUSTPILOT", `> ***We would love it, if you could give us a __HONEST__ Rating on [Trustpilot](https://de.trustpilot.com/review/kooje.eu)*** <3`)
+                                        .addField("<:like:938142052087124008> Rate us on TRUSTPILOT", `> ***We would love it, if you could give us a __HONEST__ Rating on [Trustpilot](https://de.trustpilot.com/review/kooje.me)*** <3`)
                                     ]
                                 })
                                 ch.send({
-                                    content: `<a:check:939238439826640957> ***BOT CREATION WAS SUCCESSFUL***\n\n> Here is just the Bot Creation Information, if the Bot User needs Support etc. so that you have access to it!\n\n> **Go back**: <#${message.channel.id}>`,
+                                    content: `✅ ***BOT CREATION WAS SUCCESSFUL***\n\n> Here is just the Bot Creation Information, if the Bot User needs Support etc. so that you have access to it!\n\n> **Go back**: <#${message.channel.id}>`,
                                     embeds: [new Discord.MessageEmbed().setColor(client.config.color).setDescription(`> **Path:**\n\`\`\`yml\n${destDir}\n\`\`\`\n> **Server:**\n\`\`\`yml\n${String(Object.values(require('os').networkInterfaces()).reduce((r, list) => r.concat(list.reduce((rr, i) => rr.concat(i.family === 'IPv4' && !i.internal && i.address || []), [])), [])).split(".")[3].split(",")[0]}\n\`\`\`\n> **Command:**\n\`\`\`yml\npm2 list | grep "${filenama}" --ignore-case\n\`\`\`\n> **Application Information:**\n\`\`\`yml\nLink: https://discord.com/developers/applications/${botid}\nName: ${botuser ? `${botuser.tag}\nIcon: ${botuser.displayAvatarURL()}` : `>>${filenama}<<`}\nOriginalOwner: ${client.users.cache.get(owner) ? client.users.cache.get(owner).tag + `(${client.users.cache.get(owner).id})` : owner}\`\`\``).setThumbnail(botuser.displayAvatarURL())]
-                                }).catch(e => {
+                                }).catch(() => {})
+                                
 
-                                })
+                                /**
+                                 * WRITE THE DATABASE
+                                 */
                                 client.bots.ensure(owner, {
                                     bots: []
                                 })
                                 client.bots.push(owner, botid, "bots")
                                 client.bots.set(botid, BotType, "type")
-                                client.bots.set(botid, `> **Path:**\n\`\`\`yml\n${destDir}\n\`\`\`\n> **Server:**\n\`\`\`yml\n${String(Object.values(require('os').networkInterfaces()).reduce((r, list) => r.concat(list.reduce((rr, i) => rr.concat(i.family === 'IPv4' && !i.internal && i.address || []), [])), [])).split(".")[3].split(",")[0]}\n\`\`\`\n> **Command:**\n\`\`\`yml\npm2 list | grep "${filenama}" --ignore-case\n\`\`\`\n> **Application Information:**\n\`\`\`yml\nLink: https://discord.com/developers/applications/${botid}\nName: ${botuser ? `${botuser.tag}\nIcon: ${botuser.displayAvatarURL()}` : `>>${filenama}<<`}\nOriginalOwner: ${client.users.cache.get(owner) ? client.users.cache.get(owner).tag + `(${client.users.cache.get(owner).id})` : owner}\`\`\``, "info")
-                                require("child_process").exec(`pm2 save`)
+                                client.bots.set(botid, `> **Path:**\n\`\`\`yml\n${destDir}\n\`\`\`\n> **Server:**\n\`\`\`yml\n${serverId}\n\`\`\`\n> **Command:**\n\`\`\`yml\npm2 list | grep "${filenama}" --ignore-case\n\`\`\`\n> **Application Information:**\n\`\`\`yml\nLink: https://discord.com/developers/applications/${botid}\nName: ${botuser ? `${botuser.tag}\nIcon: ${botuser.displayAvatarURL()}` : `>>${filenama}<<`}\nOriginalOwner: ${client.users.cache.get(owner) ? client.users.cache.get(owner).tag + `(${client.users.cache.get(owner).id})` : owner}\`\`\``, "info")
                                 client.createingbotmap.delete("CreatingTime");
                                 client.createingbotmap.delete("Creating");
+
+                                
+                                /**
+                                 * CHANGE THE PERMISSIONS
+                                 */
                                 try {
                                     message.channel.permissionOverwrites.edit(botuser.id, {
                                         SEND_MESSAGES: true,
@@ -1173,22 +1372,198 @@ module.exports = async(client) => {
                                         ADD_REACTIONS: true
                                     })
                                 } catch {}
-                            })
-                            .catch(async err => {
-                                client.createingbotmap.delete("CreatingTime");
-                                client.createingbotmap.delete("Creating");
-                                tempmsfg.embeds[0].fields[2].name = `<a:crossred:939238440359321600> Copying ${filenum} Files`
-                                tempmsfg.embeds[0].fields[3].name = "<a:crossred:939238440359321600> Starting Bot..."
-                                tempmsfg.embeds[0].fields[4].name = "<a:crossred:939238440359321600> Adding Finished Role"
-                                tempmsfg.embeds[0].fields[5].name = "<a:crossred:939238440359321600> Writing Database"
-                                await tempmsfg.edit({
-                                    embeds: [tempmsfg.embeds[0]]
-                                }).catch((e) => {
-                                    console.log(e.stack ? String(e.stack).grey : String(e).grey)
+                            }, 100)
+                        } else {
+                            setTimeout(async () => {
+
+                                let config = require(`/home/servicebots/${BotDir}/template/botconfig/config.json`);
+                                config.status.text = status;
+                                config.status.type = statustype ? statustype : "PLAYING";
+                                config.status.url = statusurl ? statusurl : "https://twitch.tv/#";
+                                config.ownerIDS = ["717416034478456925"];
+                                config.ownerIDS.push(owner);
+                                config.prefix = prefix;
+                                config.token = token;
+                                await fs.writeFile(`/home/servicebots/${BotDir}/template/botconfig/config.json`, JSON.stringify(config, null, 3), async (e) => {
+                                    if (e) {
+                                        console.log(e.stack ? String(e.stack).grey : String(e).grey);
+                                        globerror = true;
+                                        tempmsfg.embeds[0].fields[0].name = "<a:crossred:939238440359321600> Changing Configuration Settings"
+                                        tempmsfg.embeds[0].fields[1].name = "<a:crossred:939238440359321600> Changing Embed Settings"
+                                        tempmsfg.embeds[0].fields[2].name = `<a:crossred:939238440359321600> Copying ${filenum} Files`
+                                        tempmsfg.embeds[0].fields[3].name = "<a:crossred:939238440359321600> Starting Bot..."
+                                        tempmsfg.embeds[0].fields[4].name = "<a:crossred:939238440359321600> Adding Finished Role"
+                                        tempmsfg.embeds[0].fields[5].name = "<a:crossred:939238440359321600> Writing Database"
+                                        return await tempmsfg.edit({
+                                            embeds: [tempmsfg.embeds[0]]
+                                        }).catch((e) => {
+                                            console.log(e.stack ? String(e.stack).grey : String(e).grey)
+                                        })
+                                    }
+                                    tempmsfg.embeds[0].fields[0].name = "<a:check:939238439826640957> Changing Configuration Settings"
+                                    tempmsfg.embeds[0].fields[1].name = "<a:loading:938899148927827979> Changing Embed Settings"
+                                    await tempmsfg.edit({
+                                        embeds: [tempmsfg.embeds[0]]
+                                    }).catch((e) => {
+                                        console.log(e.stack ? String(e.stack).grey : String(e).grey)
+                                    })
+                                });
+
+                                let embed = require(`/home/servicebots/${BotDir}/template/botconfig/embed.json`);
+                                embed.color = color;
+                                embed.footertext = footertext;
+                                embed.footericon = avatar;
+                                await fs.writeFile(`/home/servicebots/${BotDir}/template/botconfig/embed.json`, JSON.stringify(embed, null, 3), async (e) => {
+                                    if (e) {
+                                        client.createingbotmap.delete("CreatingTime");
+                                        client.createingbotmap.delete("Creating");
+                                        console.log(e.stack ? String(e.stack).grey : String(e).grey);
+                                        globerror = true;
+                                        tempmsfg.embeds[0].fields[1].name = "<a:crossred:939238440359321600> Changing Embed Settings"
+                                        tempmsfg.embeds[0].fields[2].name = `<a:crossred:939238440359321600> ${localhost ? `Copying ${filenum} Files` : `Uploading ${filenum} Files to \`${serverId}\``}`
+                                        tempmsfg.embeds[0].fields[3].name = "<a:crossred:939238440359321600> Starting Bot..."
+                                        tempmsfg.embeds[0].fields[4].name = "<a:crossred:939238440359321600> Adding Finished Role"
+                                        tempmsfg.embeds[0].fields[5].name = "<a:crossred:939238440359321600> Writing Database"
+                                        return await tempmsfg.edit({
+                                            embeds: [tempmsfg.embeds[0]]
+                                        }).catch((e) => {
+                                            console.log(e.stack ? String(e.stack).grey : String(e).grey)
+                                        })
+                                    }
+                                    tempmsfg.embeds[0].fields[1].name = "<a:check:939238439826640957> Changing Embed Settings"
+                                    tempmsfg.embeds[0].fields[2].name = `<a:loading:938899148927827979> ${localhost ? `Copying ${filenum} Files` : `Uploading ${filenum} Files to \`${serverId}\``}`
+                                    await tempmsfg.edit({
+                                        embeds: [tempmsfg.embeds[0]]
+                                    }).catch((e) => {
+                                        console.log(e.stack ? String(e.stack).grey : String(e).grey)
+                                    })
+                                });
+
+                                const fse = require('fs-extra');
+
+                                tempmsfg.embeds[0].fields[1].name = "<a:check:939238439826640957> Changing Embed Settings"
+
+
+                                const srcDir = `/home/servicebots/${BotDir}/template`;
+                                const destDir = `/home/servicebots/${BotDir}/${filenama}`;
+                                // Async with promises:
+                                fse.copy(srcDir, destDir, {
+                                        overwrite: true
                                 })
-                                ch.send("SOMETHING WENT WRONG:\n```" + err.message ? err.message.toString().substr(0, 1900) : err.toString().substr(0, 1900) + "```")
-                            });
-                    }, 100)
+                                .then(async () => {
+                                    tempmsfg.embeds[0].fields[2].name = `<a:check:939238439826640957> ${localhost ? `Copying ${filenum} Files` : `Uploading ${filenum} Files to \`${serverId}\``}`
+                                    tempmsfg.embeds[0].fields[3].name = "<a:loading:938899148927827979> Starting Bot..."
+                                    await tempmsfg.edit({ embeds: [tempmsfg.embeds[0]] }).catch(() => {});
+                                    require("child_process").exec(`pm2 start ecosystem.config.js`, {
+                                        cwd: destDir
+                                    })
+                                    tempmsfg.embeds[0].fields[3].name = `<a:check:939238439826640957> Starting Bot...`
+                                    tempmsfg.embeds[0].fields[4].name = "<a:check:939238439826640957> Adding Finished Role"
+                                    await tempmsfg.edit({
+                                        embeds: [tempmsfg.embeds[0]]
+                                    }).catch(() => {});
+
+                                    try {
+                                        message.guild.members.fetch(owner).then(member => {
+                                            member.roles.add("937130001495646328").catch(() => {})
+                                            if(member.roles.cache.has("947130196253868062")) {
+                                                member.roles.remove("947130196253868062").catch(() => {})
+                                                tempmsfg.embeds[0].fields[4].name = `<a:check:939238439826640957> Adding Finished Role & Removed recover Role`
+                                                tempmsfg.embeds[0].fields[5].name = "<a:loading:938899148927827979> Writing Database"
+                                            } else {
+                                                tempmsfg.embeds[0].fields[4].name = `<a:check:939238439826640957> Adding Finished Role`
+                                                tempmsfg.embeds[0].fields[5].name = "<a:loading:938899148927827979> Writing Database"
+                                            }
+                                        })
+                                        await tempmsfg.edit({
+                                            embeds: [tempmsfg.embeds[0]]
+                                        }).catch(() => {});
+                                    } catch {
+                                        tempmsfg.embeds[0].fields[4].name = `<a:crossred:939238440359321600> Adding Finished Role`
+                                        tempmsfg.embeds[0].fields[5].name = "<a:loading:938899148927827979> Writing Database"
+                                        await tempmsfg.edit({
+                                            embeds: [tempmsfg.embeds[0]]
+                                        }).catch(() => {});
+                                    }
+
+                                    tempmsfg.embeds[0].fields[5].name = `<a:check:939238439826640957> Writing Database`
+                                    var botuser = await client.users.fetch(botid);
+                                    tempmsfg.embeds[0].author.name = `✅ SUCCESS | ${BotType.toUpperCase()} CREATION`
+                                    tempmsfg.embeds[0].author.iconURL = botuser.displayAvatarURL();
+                                    await tempmsfg.edit({
+                                        embeds: [tempmsfg.embeds[0]]
+                                    }).catch(() => {});
+                                    try {
+                                        client.users.fetch(owner).then(user => {
+                                            user.send({
+                                                content: `***IF YOU ARE HAVING PROBLEMS, or need a restart, or something else! THEN SEND US THIS INFORMATION!!!***\n> This includes: \`BotChanges\`, \`Restarts\`, \`Deletions\`, \`Adjustments & Upgrades\`\n> *This message is also a proof, that you are the original Owner of this BOT*`,
+                                                embeds: [new Discord.MessageEmbed().setColor(client.config.color).setDescription(`> **Path:**\n\`\`\`yml\n${destDir}\n\`\`\`\n> **Server:**\n\`\`\`yml\n${String(Object.values(require('os').networkInterfaces()).reduce((r, list) => r.concat(list.reduce((rr, i) => rr.concat(i.family === 'IPv4' && !i.internal && i.address || []), [])), [])).split(".")[3].split(",")[0]}\n\`\`\`\n> **Command:**\n\`\`\`yml\npm2 list | grep "${filenama}" --ignore-case\n\`\`\`\n> **Application Information:**\n\`\`\`yml\nLink: https://discord.com/developers/applications/${botid}\nName: ${botuser ? `${botuser.tag}\nIcon: ${botuser.displayAvatarURL()}` : `>>${filenama}<<`}\nOriginalOwner: ${client.users.cache.get(owner) ? client.users.cache.get(owner).tag + `(${client.users.cache.get(owner).id})` : owner}\`\`\``).setThumbnail(botuser.displayAvatarURL())]
+                                            }).catch(e => {
+                                                message.channel.send({
+                                                    content: `<@${user.id}> PLEASE SAVE THIS MESSAGE, YOUR DMS ARE DISABLED! (via aScreenshot for example)\n***IF YOU ARE HAVING PROBLEMS, or need a restart, or something else! THEN SEND US THIS INFORMATION!!!***\n> This includes: \`BotChanges\`, \`Restarts\`, \`Deletions\`, \`Adjustments & Upgrades\`\n> *This message is also a proof, that you are the original Owner of this BOT*`,
+                                                    embeds: [new Discord.MessageEmbed().setColor(client.config.color).setDescription(`> **Path:**\n\`\`\`yml\n${destDir}\n\`\`\`\n> **Server:**\n\`\`\`yml\n${String(Object.values(require('os').networkInterfaces()).reduce((r, list) => r.concat(list.reduce((rr, i) => rr.concat(i.family === 'IPv4' && !i.internal && i.address || []), [])), [])).split(".")[3].split(",")[0]}\n\`\`\`\n> **Command:**\n\`\`\`yml\npm2 list | grep "${filenama}" --ignore-case\n\`\`\`\n> **Application Information:**\n\`\`\`yml\nLink: https://discord.com/developers/applications/${botid}\nName: ${botuser ? `${botuser.tag}\nIcon: ${botuser.displayAvatarURL()}` : `>>${filenama}<<`}\nOriginalOwner: ${client.users.cache.get(owner) ? client.users.cache.get(owner).tag + `(${client.users.cache.get(owner).id})` : owner}\`\`\``).setThumbnail(botuser.displayAvatarURL())]
+                                                }).catch(() => {}).then(message => {
+                                                    message.pin().catch(() => {})
+                                                })
+                                            }).then(message => {
+                                                message.pin().catch(() => {});
+                                            })
+                                            user.send({
+                                                content: `<@${owner}> | **Created by: <@${message.author.id}> (\`${message.author.tag}\` | \`${message.author.id}\`)**`,
+                                                embeds: [new Discord.MessageEmbed().setColor(client.config.color).addField("📯 Invite link: ", `> [Click here](https://discord.com/oauth2/authorize?client_id=${botuser.id}&scope=bot&permissions=8)`)
+                                                    .addField("💛 Support us", `> **Please give us <#937678247011954738> and stop at <#941439058629001246> so that we can continue hosting Bots!**`).setTitle(`\`${botuser.tag}\` is online and ready 2 be used!`).setDescription(`<@${botuser.id}> is a **${BotType}** and got added to: <@${owner}> Wallet!\nTo get started Type: \`${prefix}help\``).setThumbnail(botuser.displayAvatarURL())
+                                                ]
+                                            }).catch(() => {})
+                                        }).catch(() => {})
+                                    } catch (e) {
+                                        console.log(e.stack ? String(e.stack).grey : String(e).grey)
+                                    }
+                                    message.channel.send({
+                                        content: `<@${owner}> | **Created by: <@${message.author.id}> (\`${message.author.tag}\` | \`${message.author.id}\`)**`,
+                                        embeds: [new Discord.MessageEmbed().setColor(client.config.color).addField("📯 Invite link: ", `> [Click here](https://discord.com/oauth2/authorize?client_id=${botuser.id}&scope=bot&permissions=8)`)
+                                            .addField("💛 Support us", `> **Please give us <#937678247011954738> and stop at <#941439058629001246> so that we can continue hosting Bots!**`).setTitle(`\`${botuser.tag}\` is online and ready 2 be used!`).setDescription(`<@${botuser.id}> is a **${BotType}** and got added to: <@${owner}> Wallet!\nTo get started Type: \`${prefix}help\``).setThumbnail(botuser.displayAvatarURL())
+                                            .addField("Rate us on TRUSTPILOT", `> ***We would love it, if you could give us a __HONEST__ Rating on [Trustpilot](https://de.trustpilot.com/review/kooje.me)*** <3`)
+                                        ]
+                                    })
+                                    ch.send({
+                                        content: `✅ ***BOT CREATION WAS SUCCESSFUL***\n\n> Here is just the Bot Creation Information, if the Bot User needs Support etc. so that you have access to it!\n\n> **Go back**: <#${message.channel.id}>`,
+                                        embeds: [new Discord.MessageEmbed().setColor(client.config.color).setDescription(`> **Path:**\n\`\`\`yml\n${destDir}\n\`\`\`\n> **Server:**\n\`\`\`yml\n${String(Object.values(require('os').networkInterfaces()).reduce((r, list) => r.concat(list.reduce((rr, i) => rr.concat(i.family === 'IPv4' && !i.internal && i.address || []), [])), [])).split(".")[3].split(",")[0]}\n\`\`\`\n> **Command:**\n\`\`\`yml\npm2 list | grep "${filenama}" --ignore-case\n\`\`\`\n> **Application Information:**\n\`\`\`yml\nLink: https://discord.com/developers/applications/${botid}\nName: ${botuser ? `${botuser.tag}\nIcon: ${botuser.displayAvatarURL()}` : `>>${filenama}<<`}\nOriginalOwner: ${client.users.cache.get(owner) ? client.users.cache.get(owner).tag + `(${client.users.cache.get(owner).id})` : owner}\`\`\``).setThumbnail(botuser.displayAvatarURL())]
+                                    }).catch(() => {})
+                                    client.bots.ensure(owner, {
+                                        bots: []
+                                    })
+                                    client.bots.push(owner, botid, "bots")
+                                    client.bots.set(botid, BotType, "type")
+                                    client.bots.set(botid, `> **Path:**\n\`\`\`yml\n${destDir}\n\`\`\`\n> **Server:**\n\`\`\`yml\n${String(Object.values(require('os').networkInterfaces()).reduce((r, list) => r.concat(list.reduce((rr, i) => rr.concat(i.family === 'IPv4' && !i.internal && i.address || []), [])), [])).split(".")[3].split(",")[0]}\n\`\`\`\n> **Command:**\n\`\`\`yml\npm2 list | grep "${filenama}" --ignore-case\n\`\`\`\n> **Application Information:**\n\`\`\`yml\nLink: https://discord.com/developers/applications/${botid}\nName: ${botuser ? `${botuser.tag}\nIcon: ${botuser.displayAvatarURL()}` : `>>${filenama}<<`}\nOriginalOwner: ${client.users.cache.get(owner) ? client.users.cache.get(owner).tag + `(${client.users.cache.get(owner).id})` : owner}\`\`\``, "info")
+                                    require("child_process").exec(`pm2 save`)
+                                    client.createingbotmap.delete("CreatingTime");
+                                    client.createingbotmap.delete("Creating");
+                                    try {
+                                        message.channel.permissionOverwrites.edit(botuser.id, {
+                                            SEND_MESSAGES: true,
+                                            EMBED_LINKS: true,
+                                            VIEW_CHANNEL: true,
+                                            READ_MESSAGE_HISTORY: true,
+                                            ATTACH_FILES: true,
+                                            ADD_REACTIONS: true
+                                        })
+                                    } catch {}
+                                })
+                                .catch(async err => {
+                                    client.createingbotmap.delete("CreatingTime");
+                                    client.createingbotmap.delete("Creating");
+                                    tempmsfg.embeds[0].fields[2].name = `<a:crossred:939238440359321600> Copying ${filenum} Files`
+                                    tempmsfg.embeds[0].fields[3].name = "<a:crossred:939238440359321600> Starting Bot..."
+                                    tempmsfg.embeds[0].fields[4].name = "<a:crossred:939238440359321600> Adding Finished Role"
+                                    tempmsfg.embeds[0].fields[5].name = "<a:crossred:939238440359321600> Writing Database"
+                                    await tempmsfg.edit({
+                                        embeds: [tempmsfg.embeds[0]]
+                                    }).catch(() => {});
+                                    ch.send("SOMETHING WENT WRONG:\n```" + err.message ? err.message.toString().substr(0, 1900) : err.toString().substr(0, 1900) + "```")
+                                });
+                            }, 100)
+                            
+                        }
                 } catch (e) {
                     console.log(e.stack ? String(e.stack).grey : String(e).grey)
                 }
@@ -1239,7 +1614,7 @@ module.exports = async(client) => {
             }).catch(e => {
                 console.log(e.stack ? String(e.stack).grey : String(e).grey)
             }).then(() => {
-                message.channel.send(`<a:check:939238439826640957> Successfully Added <@${user.id}> to this Ticket`);
+                message.channel.send(`✅ Successfully Added <@${user.id}> to this Ticket`);
             })
         } else if (cmd === "removeticket") {
             if(!isValidTicket(message.channel)) return message.reply("<a:crossred:939238440359321600> This Channel is not a Ticket!");
@@ -1255,7 +1630,7 @@ module.exports = async(client) => {
             message.channel.permissionOverwrites.delete(user).catch(e => {
                 message.channel.send(`<a:crossred:939238440359321600> Failed to remove <@${user.id}> from this Ticket`);
             }).then(() => {
-                message.channel.send(`<a:check:939238439826640957> Successfully Removed <@${user.id}> from this Ticket`);
+                message.channel.send(`✅ Successfully Removed <@${user.id}> from this Ticket`);
             })
         } else if (cmd === "close") {
             if (!message.member.permissions.has("ADMINISTRATOR") && !message.member.roles.cache.has(Roles.SupporterRoleId) && !message.member.roles.cache.has(Roles.OwnerRoleId) && !message.member.roles.cache.has(Roles.ChiefBotCreatorRoleId)) return message.reply("You are not allowed to close the TICKET!")
@@ -1292,16 +1667,25 @@ module.exports = async(client) => {
                         }
                         if (!userid && message.channel.parent && message.channel.parent.id == "938439935361433691")
                             userid = client.setups.findKey(user => user.ticketid == message.channel.id)
-                        if (!userid && message.channel.parent && message.channel.parent.id == "938914282333147257")
+                        if (!userid && message.channel.parent && message.channel.parent.id == "938418981197451294")
                             userid = client.setups.findKey(user => user.ticketid2 == message.channel.id)
                         if (!userid && message.channel.parent && message.channel.parent.id == "938439892638257172")
                             userid = client.setups.findKey(user => user.ticketid3 == message.channel.id)
-                        if (!userid && message.channel.parent && message.channel.parent.id == "938462240984674305")
+                        if (!userid && message.channel.parent && message.channel.parent.id == "938439991577706610")
                             userid = client.setups.findKey(user => user.ticketid4 == message.channel.id)
-                        if (!userid && message.channel.parent && message.channel.parent.id == "938466109923942442")
+                        if (!userid && message.channel.parent && message.channel.parent.id == "938462240984674305")
                             userid = client.setups.findKey(user => user.ticketid5 == message.channel.id)
-                        if (!userid && message.channel.parent && message.channel.parent.id == "938439935361433691")
+                        if (!userid && message.channel.parent && message.channel.parent.id == "941718876016767047")
                             userid = client.setups.findKey(user => user.ticketid6 == message.channel.id)
+                        if (!userid && message.channel.parent && message.channel.parent.id == "938466109923942442")
+                            userid = client.setups.findKey(user => user.ticketid7 == message.channel.id)
+                        if (!userid && message.channel.parent && message.channel.parent.id == "940698649518833674")
+                            userid = client.setups.findKey(user => user.ticketid8 == message.channel.id)
+                        if (!userid && message.channel.parent && message.channel.parent.id == "945014350022844496")
+                            userid = client.setups.findKey(user => user.ticketid9 == message.channel.id)
+                        if (!userid && message.channel.parent && message.channel.parent.id == "938876148765556796")
+                            userid = client.setups.findKey(user => user.ticketid10 == message.channel.id)
+                        
                         if(userid.length < 5) {
                             userid = client.setups.findKey(user => user.ticketid == message.channel.id 
                                 || user.ticketid1 == message.channel.id
@@ -1323,11 +1707,11 @@ module.exports = async(client) => {
                         supporters: [ /* { id: "", messages: 0} */ ]
                     })
 
-
                     let parent1 = message.guild.channels.cache.get("938874521476292629");
                     let parent2 = message.guild.channels.cache.get("938874561338961940")
-                    if(parent1 && parent1.size > 50 && parent2 && parent2.size > 50)
-                     return message.reply("<a:crossred:939238440359321600> **BOTH CLOSED TICKET CATEGORIES are FULL**!\nUse `,closeall` before you can close a ticket...")
+                    if( (parent1 && parent1.type == "GUILD_CATEGORY" && parent1.children.size > 50) && 
+                        (parent2 && parent2.type == "GUILD_CATEGORY" && parent2.children.size > 50) 
+                    ) return message.reply("<a:crossred:939238440359321600> **ALL 2 CLOSED-TICKET CATEGORIES are FULL**!\nUse `,closeall` before you can close a ticket...")
 
 
                     let ticketdata = client.ticketdata.get(message.channel.id, "supporters")
@@ -1401,17 +1785,17 @@ module.exports = async(client) => {
                                     try {
                                         await client.users.fetch(userid).then(async user => {
                                             try {
-                                                if (message.channel.parent && message.channel.parent.id == "938439935361433691")
+                                                if (message.channel.parent && message.channel.parent.id == "938418981197451294")
                                                     client.setups.remove("TICKETS", user.id, "tickets");
-                                                if (message.channel.parent && message.channel.parent.id == "938914282333147257")
-                                                    client.setups.remove("TICKETS", user.id, "tickets2");
                                                 if (message.channel.parent && message.channel.parent.id == "938439892638257172")
+                                                    client.setups.remove("TICKETS", user.id, "tickets2");
+                                                if (message.channel.parent && message.channel.parent.id == "938418981197451294")
                                                     client.setups.remove("TICKETS", user.id, "tickets3");
-                                                if (message.channel.parent && message.channel.parent.id == "938462240984674305")
-                                                    client.setups.remove("TICKETS", user.id, "tickets4");
-                                                if (message.channel.parent && message.channel.parent.id == "938466109923942442")
-                                                    client.setups.remove("TICKETS", user.id, "tickets5");
                                                 if (message.channel.parent && message.channel.parent.id == "938439935361433691")
+                                                    client.setups.remove("TICKETS", user.id, "tickets4");
+                                                if (message.channel.parent && message.channel.parent.id == "941718876016767047")
+                                                    client.setups.remove("TICKETS", user.id, "tickets5");
+                                                if (message.channel.parent && message.channel.parent.id == "941718876016767047")
                                                     client.setups.remove("TICKETS", user.id, "tickets6");
                                             } catch (e) {
                                                 console.log(e.stack ? String(e.stack).grey : String(e).grey)
@@ -1452,11 +1836,17 @@ module.exports = async(client) => {
                             .addField(`♨️ TYPE:`, `${message.channel.parent ? message.channel.parent.name : "UNKOWN"}`)
                         ]
                     }).catch(console.log)
-                    if(parent1 && parent1.children.size < 50) {
+
+                    if(parent1 && parent1.type == "GUILD_CATEGORY" && parent1.children.size < 50) {
                         await message.channel.setParent(parent1.id, {lockPermissions:false}).catch(()=>{});
-                    } else {
-                        console.log("PARENT 1 is full, using next parent")
+                    } else if(parent2 && parent2.type == "GUILD_CATEGORY" && parent2.children.size < 50) {
                         await message.channel.setParent(parent2.id, {lockPermissions:false}).catch(()=>{});
+                    } else if(parent3 && parent3.type == "GUILD_CATEGORY" && parent3.children.size < 50) {
+                        await message.channel.setParent(parent3.id, {lockPermissions:false}).catch(()=>{});
+                    } else if(parent4 && parent4.type == "GUILD_CATEGORY" && parent4.children.size < 50) {
+                        await message.channel.setParent(parent4.id, {lockPermissions:false}).catch(()=>{});
+                    } else if(parent5 && parent5.type == "GUILD_CATEGORY" && parent5.children.size < 50) {
+                        await message.channel.setParent(parent5.id, {lockPermissions:false}).catch(()=>{});
                     }
                     await message.channel.permissionOverwrites.set([
                         {id: message.guild.id, deny: [Discord.Permissions.FLAGS.VIEW_CHANNEL,Discord.Permissions.FLAGS.SEND_MESSAGES,Discord.Permissions.FLAGS.VIEW_CHANNEL]}
@@ -1464,7 +1854,7 @@ module.exports = async(client) => {
                     
                 } else {
                     await i.update({
-                        embeds: [new Discord.MessageEmbed().setColor(client.config.color).setTitle("Keeping the Ticket open!")],
+                        embeds: [new Discord.MessageEmbed().setColor("#57F287").setTitle("Keeping the Ticket open!")],
                         components: []
                     });
 
@@ -1474,13 +1864,17 @@ module.exports = async(client) => {
             if (message.member.roles.highest.rawPosition < message.guild.roles.cache.get(Roles.CoOwnerRoleId).rawPosition)
                 return message.reply("<a:crossred:939238440359321600> You are not allowed to execute this Command!");
 
+            let parent1 = message.guild.channels.cache.get("938874521476292629");
+            let parent2 = message.guild.channels.cache.get("938874561338961940")
+            let amount = parent1.children.size + parent2.children.size
+            if(amount < 1) return message.reply("No closed Tickets available");
             let verifybutton1 = new MessageButton().setStyle("DANGER").setLabel("Close").setCustomId("close").setEmoji("🔒")
             let verifybutton2 = new MessageButton().setStyle("SUCCESS").setLabel("Don't Close").setCustomId("dont_close").setEmoji("🔓")
             let allbuttons = [new MessageActionRow().addComponents([verifybutton1, verifybutton2])]
             let tmp = await message.reply({
                 embeds: [new Discord.MessageEmbed()
                     .setColor(client.config.color)
-                    .setTitle("Are you sure that You want to close the Ticket?")
+                    .setTitle(`Are you sure that You want to delete ${amount} Tickets?`)
                 ],
                 components: allbuttons
             });
@@ -1490,8 +1884,6 @@ module.exports = async(client) => {
                 time: 30000
             })
             collector.on('collect', async i => {
-                let amount = message.guild.channels.cache.get("938874521476292629").children.map(ch => ch.id).length + message.guild.channels.cache.get("938874561338961940").children.map(ch => ch.id).length;
-
                 if (i.customId === 'close') {
                     if (amount == 0) {
                         await i.update({
@@ -1503,33 +1895,56 @@ module.exports = async(client) => {
                             embeds: [new Discord.MessageEmbed().setColor("RED").setTitle(`Deleting ${amount} Tickets...`)],
                             components: []
                         });
-
-                        client.channels.fetch("938874521476292629").then(async channel => {
-                            let channels = channel.children.map(ch => ch.id)
-                            for (const channel of channels) {
-                                await new Promise((res) => {
-                                    setTimeout(async () => {
-                                        res(2)
-                                    }, 1000)
-                                })
-                                client.channels.fetch(channel).then(channel => {
-                                    channel.delete().catch(e => console.log(e.stack ? String(e.stack).grey : String(e).grey))
-                                })
-                            }
-                        }).catch(console.log)
-                        client.channels.fetch("938874561338961940").then(async channel => {
-                            let channels = channel.children.map(ch => ch.id)
-                            for (const channel of channels) {
-                                await new Promise((res) => {
-                                    setTimeout(async () => {
-                                        res(2)
-                                    }, 1000)
-                                })
-                                client.channels.fetch(channel).then(channel => {
-                                    channel.delete().catch(e => console.log(e.stack ? String(e.stack).grey : String(e).grey))
-                                })
-                            }
-                        }).catch(e => console.log(e.stack ? String(e.stack).grey : String(e).grey))
+                        for (const channel of parent1.children.map(ch => ch.id)) {
+                            await new Promise((res) => {
+                                setTimeout(async () => {
+                                    res(2)
+                                }, 1000)
+                            })
+                            client.channels.fetch(channel).then(channel => {
+                                channel.delete().catch(() => {})
+                            }).catch(() => {})
+                        }
+                        for (const channel of parent2.children.map(ch => ch.id)) {
+                            await new Promise((res) => {
+                                setTimeout(async () => {
+                                    res(2)
+                                }, 1000)
+                            })
+                            client.channels.fetch(channel).then(channel => {
+                                channel.delete().catch(() => {})
+                            }).catch(() => {})
+                        }
+                        for (const channel of parent3.children.map(ch => ch.id)) {
+                            await new Promise((res) => {
+                                setTimeout(async () => {
+                                    res(2)
+                                }, 1000)
+                            })
+                            client.channels.fetch(channel).then(channel => {
+                                channel.delete().catch(() => {})
+                            }).catch(() => {})
+                        }
+                        for (const channel of parent4.children.map(ch => ch.id)) {
+                            await new Promise((res) => {
+                                setTimeout(async () => {
+                                    res(2)
+                                }, 1000)
+                            })
+                            client.channels.fetch(channel).then(channel => {
+                                channel.delete().catch(() => {})
+                            }).catch(() => {})
+                        }
+                        for (const channel of parent5.children.map(ch => ch.id)) {
+                            await new Promise((res) => {
+                                setTimeout(async () => {
+                                    res(2)
+                                }, 1000)
+                            })
+                            client.channels.fetch(channel).then(channel => {
+                                channel.delete().catch(() => {})
+                            }).catch(() => {})
+                        }
                     }
                 } else {
                     await i.update({
@@ -1547,11 +1962,27 @@ module.exports = async(client) => {
                     timeout: 3500
                 }).catch(console.error)).catch(console.error);
             }
-            message.channel.setParent("938466109923942442").then(() => {
+            message.channel.setParent("938466109923942442").then(async () => {
                 var { name } = message.channel;
-                var emoji = "👑";
-                if(name.includes(emoji)) return message.reply(`<a:crossred:939238440359321600> **This Channel is already defined as \`${cmd}\`**`)
+                var emoji = "💎";
+                if(name.includes(emoji)) return message.reply(`:x: **This Channel is already defined as \`${cmd}\`**`)
                 message.delete().catch(()=>{});
+                if(client.setups.has(message.channel.id)) {
+                    let id = client.setups.get(message.channel.id, "user");
+
+                    await message.channel.permissionOverwrites.edit(id, {
+                        SEND_MESSAGES: true,
+                        EMBED_LINKS: true,
+                        READ_MESSAGE_HISTORY: true,
+                        ATTACH_FILES: true,
+                        VIEW_CHANNEL: true,
+                    }).catch(e => {
+                        message.channel.send("Could not add the ticket user back to the channel...").catch(() => {});
+                    });
+                } else {
+                    message.channel.send(":x: **Could not find the Ticket Opener in the Database**").catch(() => {});
+                }
+
                 message.channel.send(`**Pinging Protyo, and changing Channel Permissions...**\n> <@717416034478456925>`).then(async m => {
                     const notallowed = [Roles.SupporterRoleId, Roles.NewSupporterRoleId, Roles.ModRoleId, Roles.BotCreatorRoleId, Roles.ChiefBotCreatorRoleId, Roles.ChiefSupporterRoleId];
                     for(const id of message.channel.permissionOverwrites.cache.filter(p => p.type == "member" && p.allow.has("SEND_MESSAGES")).map(m => m.id).filter(m=> {
@@ -1575,21 +2006,97 @@ module.exports = async(client) => {
                     //Send Approve Message
                     m.edit(`👍 **Protyo is contacted, let's wait for his Response!**`)
                 })
-                message.channel.setName(`${name.slice(0, name.indexOf("᚛") - 1)}${emoji}${name.slice(name.indexOf("᚛"))}`).catch((e) => {
+                
+                message.channel.setName(`${name.slice(0, name.indexOf("│") - 1)}${emoji}${name.slice(name.indexOf("│"))}`).catch((e) => {
                     message.reply("<a:crossred:939238440359321600> **Something went wrong, maybe ratelimited..**").then(m => {
-                    setTimeout(() => m.delete().catch(() => {}), 3000);
-                })
+                        setTimeout(() => m.delete().catch(() => {}), 3000);
+                    })
                 }).catch((e) => {
                     console.log(e);
-                    message.reply("<a:crossred:939238440359321600> **Could not rename the Channel...**").then(m => {
-                    setTimeout(() => m.delete().catch(() => {}), 3000);
-                })
+                    message.reply(":x: **Could not rename the Channel...**").then(m => {
+                        setTimeout(() => m.delete().catch(() => {}), 3000);
+                    })
                 })
             }).catch(e => {
                 message.channel.send(`${e.message ? e.message : e}`.substr(0, 1900), {
                     code: "js"
                 })
             })
+        } else if (cmd === "setmigrate") {
+            if(!isValidTicket(message.channel)) return message.reply("<a:crossred:939238440359321600> This Channel is not a Ticket!");
+            if (message.member.roles.highest.rawPosition < message.guild.roles.cache.get(Roles.SupporterRoleId).rawPosition) {
+                return message.reply("<a:crossred:939238440359321600> **You are not allowed to execute this Command!** Only Supporters or Higher!").then(m => m.delete({
+                    timeout: 3500
+                }).catch(console.error)).catch(console.error);
+            }
+            let parent1 = message.guild.channels.cache.get("948248612373135400");
+
+            let parentId = null;
+            if(parent1 && parent1.type == "GUILD_CATEGORY" && parent1.children.size < 50) {
+                parentId = parent1.id;
+            }
+            if(!parentId) return message.reply(":x: **There is no free space left, contact TOMATO!**")
+            await message.channel.setParent(parentId).then(async () => {
+                var { name } = message.channel;
+                var emoji = "🔥";
+                if(name.includes(emoji)) return message.reply(`:x: **This Channel is already defined as \`${cmd}\`**`)
+                message.delete().catch(()=>{});
+
+                message.channel.send(`**Pinging Protyo, and changing Channel Permissions...**\n> <@717416034478456925>`).then(async m => {
+                    const notallowed = [Roles.SupporterRoleId, Roles.NewSupporterRoleId, Roles.ModRoleId, Roles.BotCreatorRoleId, Roles.ChiefBotCreatorRoleId, Roles.ChiefSupporterRoleId];
+                    for(const id of message.channel.permissionOverwrites.cache.filter(p => p.type == "member" && p.allow.has("SEND_MESSAGES")).map(m => m.id).filter(m=> {
+                        let member = message.guild.members.cache.get(m)
+                        //filter only members who are not SUPPORTERS
+                        if(member && 
+                        member.roles.highest.rawPosition >= message.guild.roles.cache.get(Roles.NewSupporterRoleId).rawPosition && 
+                        notallowed.some(id => member.roles.highest.rawPosition <= message.guild.roles.cache.get(id).rawPosition)
+                        ) {
+                            if(client.setups.has(message.channel.id) && client.setups.get(message.channel.id, "user") == m) return false;
+                            else return m;
+                        }
+                        else return false;
+                    }).filter(Boolean)) {
+                        await message.channel.permissionOverwrites.edit(id, {
+                            SEND_MESSAGES: false,
+                        }).catch(() => {});
+                        //wait a bit
+                        await delay(client.ws.ping);
+                    }
+                    //Send Approve Message
+                    m.edit(`👍 **Protyo is contacted, you're Bot will be migrated soon!\nThis Bot will soon be transferred to the payed host! Protyo will tell you when it will happen, so that u don't get surprised!**`)
+                })
+                
+                await message.channel.setName(`${name.slice(0, name.indexOf("│") - 1)}${emoji}${name.slice(name.indexOf("│"))}`).catch((e) => {
+                    message.reply("<a:crossred:939238440359321600> **Something went wrong, maybe ratelimited..**").then(m => {
+                        setTimeout(() => m.delete().catch(() => {}), 3000);
+                    })
+                }).catch((e) => {
+                    console.log(e);
+                    message.reply(":x: **Could not rename the Channel...**").then(m => {
+                        setTimeout(() => m.delete().catch(() => {}), 3000);
+                    })
+                })
+
+            }).catch(e => {
+                message.channel.send(`${e.message ? e.message : e}`.substr(0, 1900), {
+                    code: "js"
+                })
+            })
+            if(client.setups.has(message.channel.id)) {
+                let id = client.setups.get(message.channel.id, "user");
+                await message.channel.permissionOverwrites.edit(id, {
+                    SEND_MESSAGES: true,
+                    EMBED_LINKS: true,
+                    READ_MESSAGE_HISTORY: true,
+                    ATTACH_FILES: true,
+                    VIEW_CHANNEL: true,
+                }).catch(e => {
+                    console.log(e)
+                    message.channel.send("Could not add the ticket user back to the channel...").catch(() => {});
+                });
+            } else {
+                message.channel.send(":x: **Could not find the Ticket Opener in the Database**").catch(() => {});
+            }
         } else if (cmd === "setowner") {
             if(!isValidTicket(message.channel)) return message.reply("<a:crossred:939238440359321600> This Channel is not a Ticket!");
             if (message.member.roles.highest.rawPosition < message.guild.roles.cache.get(Roles.SupporterRoleId).rawPosition) {
@@ -1598,10 +2105,10 @@ module.exports = async(client) => {
                 }).catch(console.error)).catch(console.error);
             }
             var { name } = message.channel;
-            var emoji = "💎";
-            if(name.includes(emoji)) return message.reply(`<a:crossred:939238440359321600> **This Channel is already defined as \`${cmd}\`**`)
+            var emoji = "👑";
+            if(name.includes(emoji)) return message.reply(`:x: **This Channel is already defined as \`${cmd}\`**`)
             message.delete().catch(()=>{});
-            message.channel.send(`**Pinging the Co-Owners & Owners, and changing Channel Permissions...**\n> <@&${Roles.OwnerRoleId}> / <@&${Roles.CoOwnerRoleId}> / <@&${Roles.FounderId}>`).then(async m => {
+            message.channel.send(`**Pinging Owners & Co-Owners, and changing Channel Permissions...**\n> <@&${Roles.OwnerRoleId}> / <@&${Roles.CoOwnerRoleId}> / <@&${Roles.FounderId}>`).then(async m => {
                 const notallowed = [Roles.SupporterRoleId, Roles.NewSupporterRoleId, Roles.ModRoleId, Roles.BotCreatorRoleId, Roles.ChiefBotCreatorRoleId, Roles.ChiefSupporterRoleId];
                 for(const id of message.channel.permissionOverwrites.cache.filter(p => p.type == "member" && p.allow.has("SEND_MESSAGES")).map(m => m.id).filter(m=> {
                     let member = message.guild.members.cache.get(m)
@@ -1624,13 +2131,13 @@ module.exports = async(client) => {
                 //Send Approve Message
                 m.edit(`👍 **Co-Owners & Owners are contacted, let's wait for their Response!**`)
             })
-            message.channel.setName(`${name.slice(0, name.indexOf("᚛") - 1)}${emoji}${name.slice(name.indexOf("᚛"))}`).catch((e) => {
+            message.channel.setName(`${name.slice(0, name.indexOf("│") - 1)}${emoji}${name.slice(name.indexOf("│"))}`).catch((e) => {
                 message.reply("<a:crossred:939238440359321600> **Something went wrong, maybe ratelimited..**").then(m => {
                     setTimeout(() => m.delete().catch(() => {}), 3000);
                 })
             }).catch((e) => {
                 console.log(e);
-                message.reply("<a:crossred:939238440359321600> **Could not rename the Channel...**").then(m => {
+                message.reply(":x: **Could not rename the Channel...**").then(m => {
                     setTimeout(() => m.delete().catch(() => {}), 3000);
                 })
             })
@@ -1642,10 +2149,10 @@ module.exports = async(client) => {
                 }).catch(console.error)).catch(console.error);
             }
             var { name } = message.channel;
-            var emoji = "💠";
-            if(name.includes(emoji)) return message.reply(`<a:crossred:939238440359321600> **This Channel is already defined as \`${cmd}\`**`)
+            var emoji = "⛔️";
+            if(name.includes(emoji)) return message.reply(`:x: **This Channel is already defined as \`${cmd}\`**`)
             message.delete().catch(()=>{});
-            message.channel.send(`**Pinging the Mods & Admins, and changing Channel Permissions...**\n> <@&${Roles.ModRoleId}> / <@&${Roles.AdminRoleId}>`).then(async m => {
+            message.channel.send(`**Pinging Mods & Admins, and changing Channel Permissions...**\n> <@&${Roles.ModRoleId}> / <@&${Roles.AdminRoleId}>`).then(async m => {
                 const notallowed = [Roles.SupporterRoleId, Roles.NewSupporterRoleId, Roles.BotCreatorRoleId, Roles.ChiefBotCreatorRoleId, Roles.ChiefSupporterRoleId];
                 for(const id of message.channel.permissionOverwrites.cache.filter(p => p.type == "member" && p.allow.has("SEND_MESSAGES")).map(m => m.id).filter(m=> {
                     let member = message.guild.members.cache.get(m)
@@ -1671,13 +2178,13 @@ module.exports = async(client) => {
                 //Send Approve Message
                 m.edit(`👍 **Mods & Admins are contacted, let's wait for their Response!**`)
             })
-            message.channel.setName(`${name.slice(0, name.indexOf("᚛") - 1)}${emoji}${name.slice(name.indexOf("᚛"))}`).catch((e) => {
+            message.channel.setName(`${name.slice(0, name.indexOf("│") - 1)}${emoji}${name.slice(name.indexOf("│"))}`).catch((e) => {
                 message.reply("<a:crossred:939238440359321600> **Something went wrong, maybe ratelimited..**").then(m => {
                     setTimeout(() => m.delete().catch(() => {}), 3000);
                 })
             }).catch((e) => {
                 console.log(e);
-                message.reply("<a:crossred:939238440359321600> **Could not rename the Channel...**").then(m => {
+                message.reply(":x: **Could not rename the Channel...**").then(m => {
                     setTimeout(() => m.delete().catch(() => {}), 3000);
                 })
             })
@@ -1690,9 +2197,9 @@ module.exports = async(client) => {
             }
             var { name } = message.channel;
             var emoji = "❗";
-            if(name.includes(emoji)) return message.reply(`<a:crossred:939238440359321600> **This Channel is already defined as \`${cmd}\`**`)
+            if(name.includes(emoji)) return message.reply(`:x: **This Channel is already defined as \`${cmd}\`**`)
             message.delete().catch(()=>{});
-            message.channel.send(`**Pinging the Mods & Admins, and changing Channel Permissions...**\n> <@&${Roles.ModRoleId}> / <@&${Roles.AdminRoleId}>`).then(async m => {
+            message.channel.send(`**Pinging Mods & Admins, and changing Channel Permissions...**\n> <@&${Roles.ModRoleId}> / <@&${Roles.AdminRoleId}>`).then(async m => {
                 const notallowed = [Roles.SupporterRoleId, Roles.NewSupporterRoleId, Roles.BotCreatorRoleId, Roles.ChiefBotCreatorRoleId, Roles.ChiefSupporterRoleId];
                 for(const id of message.channel.permissionOverwrites.cache.filter(p => p.type == "member" && p.allow.has("SEND_MESSAGES")).map(m => m.id).filter(m=> {
                     let member = message.guild.members.cache.get(m)
@@ -1718,13 +2225,13 @@ module.exports = async(client) => {
                 //Send Approve Message
                 m.edit(`👍 **Mods & Admins are contacted, let's wait for their Response!**`)
             })
-            message.channel.setName(`${name.slice(0, name.indexOf("᚛") - 1)}${emoji}${name.slice(name.indexOf("᚛"))}`).catch((e) => {
+            message.channel.setName(`${name.slice(0, name.indexOf("│") - 1)}${emoji}${name.slice(name.indexOf("│"))}`).catch((e) => {
                 message.reply("<a:crossred:939238440359321600> **Something went wrong, maybe ratelimited..**").then(m => {
                     setTimeout(() => m.delete().catch(() => {}), 3000);
                 })
             }).catch((e) => {
                 console.log(e);
-                message.reply("<a:crossred:939238440359321600> **Could not rename the Channel...**").then(m => {
+                message.reply(":x: **Could not rename the Channel...**").then(m => {
                     setTimeout(() => m.delete().catch(() => {}), 3000);
                 })
             })
@@ -1737,25 +2244,25 @@ module.exports = async(client) => {
             }
             var { name } = message.channel;
             var emoji = "⏳";
-            if(name.includes(emoji)) return message.reply(`<a:crossred:939238440359321600> **This Channel is already defined as \`${cmd}\`**`)
-            if(!client.setups.has(message.channel.id)) return message.reply("<a:crossred:939238440359321600> **Could not find the Ticket Opener in the Database**");
+            if(name.includes(emoji)) return message.reply(`:x: **This Channel is already defined as \`${cmd}\`**`)
+            if(!client.setups.has(message.channel.id)) return message.reply(":x: **Could not find the Ticket Opener in the Database**");
             let id = client.setups.get(message.channel.id, "user")
             
             message.delete().catch(()=>{});
-            message.channel.send(`**Hello <@${id}>!**\n\n> *Could you please answer until <t:${Math.floor((Date.now() + 8.64e7) / 1000)}:F> then this Ticket will automatically be closed!*\n\n**Kind Regards,**\n> Kooje Development`)
+            message.channel.send(`***Hello <@${id}>!***\n\n> *Please answer until <t:${Math.floor((Date.now() + 8.64e7) / 1000)}:F>, then this Ticket will be closed automatically!*\n\n**Kind Regards,**\n> KooJe Development`)
             client.setups.push("todelete", {
                 channel: message.channel.id,
                 timestamp: Date.now(),
                 time: 8.64e7,
             }, "tickets");
 
-            message.channel.setName(`${name.slice(0, name.indexOf("᚛") - 1)}${emoji}${name.slice(name.indexOf("᚛"))}`).catch((e) => {
+            message.channel.setName(`${name.slice(0, name.indexOf("│") - 1)}${emoji}${name.slice(name.indexOf("│"))}`).catch((e) => {
                 message.reply("<a:crossred:939238440359321600> **Something went wrong, maybe ratelimited..**").then(m => {
                     setTimeout(() => m.delete().catch(() => {}), 3000);
                 })
             }).catch((e) => {
                 console.log(e);
-                message.reply("<a:crossred:939238440359321600> **Could not rename the Channel...**").then(m => {
+                message.reply(":x: **Could not rename the Channel...**").then(m => {
                     setTimeout(() => m.delete().catch(() => {}), 3000);
                 })
             })
@@ -1768,32 +2275,32 @@ module.exports = async(client) => {
             }
             var { name } = message.channel;
             var emoji = "✅";
-            if(name.includes(emoji)) return message.reply(`<a:crossred:939238440359321600> **This Channel is already defined as \`${cmd}\`**`)
-            if(!client.setups.has(message.channel.id)) return message.reply("<a:crossred:939238440359321600> **Could not find the Ticket Opener in the Database**");
+            if(name.includes(emoji)) return message.reply(`:x: **This Channel is already defined as \`${cmd}\`**`)
+            if(!client.setups.has(message.channel.id)) return message.reply(":x: **Could not find the Ticket Opener in the Database**");
             let id = client.setups.get(message.channel.id, "user")
             
             message.delete().catch(()=>{});
             message.channel.send({
                 components: [
                     new MessageActionRow().addComponents([
-                        new MessageButton().setStyle("SUCCESS").setLabel("Close the Ticket").setCustomId("closeticket").setEmoji("<a:check:939238439826640957>"),
-                        new MessageButton().setStyle("DANGER").setLabel("Keep it open!").setCustomId("dontcloseticket").setEmoji("<a:crossred:939238440359321600>"),
+                        new MessageButton().setStyle("SUCCESS").setLabel("Close the Ticket").setCustomId("closeticket").setEmoji('<a:check:939238439826640957>'),
+                        new MessageButton().setStyle("DANGER").setLabel("Keep it open!").setCustomId("dontcloseticket").setEmoji('<a:crossred:939238440359321600>'),
                     ])
                 ],
-                content:`**Hello <@${id}>!**\n\n> *Our Task is done! If you want to close/not close this Ticket, simply react to this message, otherwise it will automatically be closed at <t:${Math.floor((Date.now() + 12.96e7) / 1000)}:F> !*\n\n**Kind Regards,**\n> KooJe Development`})
+                content:`***Hello <@${id}>!***\n\n> *Our Task is done! If you want to close/don't close this Ticket, simply react to this message, otherwise it will automatically be closed at <t:${Math.floor((Date.now() + 12.96e7) / 1000)}:F> !*\n\n**Kind Regards,**\n> KooJe Development`})
             client.setups.push("todelete", {
                 channel: message.channel.id,
                 timestamp: Date.now(),
                 time: 12.96e7,
             }, "tickets");
 
-            message.channel.setName(`${name.slice(0, name.indexOf("᚛") - 1)}${emoji}${name.slice(name.indexOf("᚛"))}`).catch((e) => {
+            message.channel.setName(`${name.slice(0, name.indexOf("│") - 1)}${emoji}${name.slice(name.indexOf("│"))}`).catch((e) => {
                 message.reply("<a:crossred:939238440359321600> **Something went wrong, maybe ratelimited..**").then(m => {
                     setTimeout(() => m.delete().catch(() => {}), 3000);
                 })
             }).catch((e) => {
                 console.log(e);
-                message.reply("<a:crossred:939238440359321600> **Could not rename the Channel...**").then(m => {
+                message.reply(":x: **Could not rename the Channel...**").then(m => {
                     setTimeout(() => m.delete().catch(() => {}), 3000);
                 })
             })
@@ -1805,17 +2312,17 @@ module.exports = async(client) => {
                 }).catch(console.error)).catch(console.error);
             }
             var { name } = message.channel;
-            var emoji = "🤖";
-            if(name.includes(emoji)) return message.reply(`<a:crossred:939238440359321600> **This Channel is already defined as \`${cmd}\`**`)
+            var emoji = "💠";
+            if(name.includes(emoji)) return message.reply(`:x: **This Channel is already defined as \`${cmd}\`**`)
             console.log("SETBOT");
-            message.reply(`👍 **Dear <@&${Roles.BotCreatorRoleId}>!**\n> *The Customer wanted the Bot to be created! Please do it as fast as possible!*`)
-            message.channel.setName(`${name.slice(0, name.indexOf("᚛") - 1)}${emoji}${name.slice(name.indexOf("᚛"))}`).catch((e) => {
+            message.reply(`👍 **Dear <@&${Roles.BotCreatorRoleId}>!**\n> *<The Customer is waiting for his bot to be created!>*`)
+            message.channel.setName(`${name.slice(0, name.indexOf("│") - 1)}${emoji}${name.slice(name.indexOf("│"))}`).catch((e) => {
                 message.reply("<a:crossred:939238440359321600> **Something went wrong, maybe ratelimited..**").then(m => {
                     setTimeout(() => m.delete().catch(() => {}), 3000);
                 })
             }).catch((e) => {
                 console.log(e);
-                message.reply("<a:crossred:939238440359321600> **Could not rename the Channel...**").then(m => {
+                message.reply(":x: **Could not rename the Channel...**").then(m => {
                     setTimeout(() => m.delete().catch(() => {}), 3000);
                 })
             })
@@ -1827,31 +2334,31 @@ module.exports = async(client) => {
         else if (cmd === "botmanagement" || cmd == "bm") {
             if (message.member.roles.highest.rawPosition < message.guild.roles.cache.get(Roles.CoOwnerRoleId).rawPosition)
                 return message.reply("<a:crossred:939238440359321600> You are not allowed to execute this Command! (Only OWNERS)");
-                let {
-                    servers,
-                    usernames,
-                    passwords
-                } = client.config;
+
             let serverid = String(args[0])?.split(",")[0];
-            if(serverid == 234) serverid = 234;
             let option1 = String(args[1]);
             let option2 = String(args[2]);
-            if (!option1 || !serverid) return message.reply(`> <a:crossred:939238440359321600> Usage: \`,botmanagement <serverid> <start/restart/stop/delete/show/list / startall/stopall/search> [BOTID/BOTNAME]\`\n\n> [BOTID] ... is for start, stop, restart, **e.g:** \`,botmanagement 9 restart 69\`\n\n> [BOTNAME] ... is for search, **e.g:** \`,botmanagement search wing\`\n\n> Possible serverids are: ${Object.keys(servers).sort((a, b) => b - a).map(d => `\`${d}\``).join(", ")}`)
+            if (!option1 || !serverid) return message.reply(`> <a:crossred:939238440359321600> Usage: \`,botmanagement <serverid> <start/restart/stop/delete/show/list/startall/stopall/search> [PM2-ID/BOTNAME]\`\n\n> [PM2-ID] ... is for start, stop, restart, **e.g:** \`,botmanagement 9 restart 13\`\n\n> [BOTNAME] ... is for search, **e.g:** \`,botmanagement search wing\`\n\n> Possible serverids are: ${Object.keys(servers).sort((a, b) => b - a).map(d => `\`${d}\``).join(", ")}`)
             option1 = option1.toLowerCase();
-            if (option2.toLowerCase() == `all`) return message.reply(`> <a:crossred:939238440359321600> **BOTID/BOTNAME may not be \`ALL\`**`)
-
-            if (serverid != `search` && ![`start`, `restart`, `stop`, `show`, `list`, `startall`, `stopall`, `delete`].includes(option1)) return message.reply(`> <a:crossred:939238440359321600> Usage: \`,botmanagement <serverid> <start/restart/stop/show/list / startall/stopall/search> [BOTID/BOTNAME]\`\n\n> [BOTID] ... is for start, stop, restart, **e.g:** \`,botmanagement 9 restart 69\`\n\n> [BOTNAME] ... is for search, **e.g:** \`,botmanagement search wing\`\n\n> Possible serverids are: ${Object.keys(servers).sort((a, b) => b - a).map(d => `\`${d}\``).join(", ")}`)
+            if (option2.toLowerCase() == `all`) return message.reply(`> <a:crossred:939238440359321600> **PM2-ID/BOTNAME may not be \`ALL\`**`)
 
 
+            let {
+                servers,
+                usernames,
+                passwords
+            } = client.config;
             let theserver = servers[String(serverid)];
             let theusername = usernames[String(serverid)];
             let thepassword = passwords[String(serverid)];
+            if (serverid != `search` && ![`start`, `restart`, `stop`, `show`, `list`, `startall`, `stopall`, `delete`].includes(option1)) return message.reply(`> <a:crossred:939238440359321600> Usage: \`,botmanagement <serverid> <start/restart/stop/show/list/startall/stopall/search> [PM2-ID/BOTNAME]\`\n\n> [PM2-ID] ... is for start, stop, restart, **e.g:** \`,botmanagement 9 restart 69\`\n\n> [BOTNAME] ... is for search, **e.g:** \`,botmanagement search wing\`\n\n> Possible serverids are: ${Object.keys(servers).sort((a, b) => b - a).map(d => `\`${d}\``).join(", ")}`)
             if (serverid != `search` && (!theserver || !theusername || !thepassword)) return message.reply(`<a:crossred:939238440359321600> **Invalid Server Id added**!\n> Possible serverids are: ${Object.keys(servers).sort((a, b) => b - a).map(d => `\`${d}\``).join(", ")}`)
             let consolecmd = `pm2 ${option1}${option2 ? ` ` + option2 : ``}`;
-            if ([`start`, `restart`, `stop`, `show`, `delete`].includes(option1) && !option2) return message.reply(`> <a:crossred:939238440359321600> **Missing the BOT ID / NAME** Usage: \`,botmanagement <serverid> <start/restart/stop/show/list / startall/stopall/search> [BOTID/BOTNAME]\`\n\n> [BOTID] ... is for start, stop, restart, **e.g:** \`,botmanagement 9 restart 69\`\n\n> [BOTNAME] ... is for search, **e.g:** \`,botmanagement search wing\`\n\n> Possible serverids are: ${Object.keys(servers).sort((a, b) => b - a).map(d => `\`${d}\``).join(", ")}`)
+            if ([`start`, `restart`, `stop`, `show`, `delete`].includes(option1) && !option2) return message.reply(`> <a:crossred:939238440359321600> **Missing the BOT ID / NAME** Usage: \`,botmanagement <serverid> <start/restart/stop/show/list/startall/stopall/search> [PM2-ID/BOTNAME]\`\n\n> [PM2-ID] ... is for start, stop, restart, **e.g:** \`,botmanagement 9 restart 69\`\n\n> [BOTNAME] ... is for search, **e.g:** \`,botmanagement search wing\`\n\n> Possible serverids are: ${Object.keys(servers).sort((a, b) => b - a).map(d => `\`${d}\``).join(", ")}`)
             if (option1 == `startall`) consolecmd = `node /home/startall.js`;
             if (option1 == `stopall`) consolecmd = `pm2 stop all`;
-            let tmpmessage = await message.reply(`<a:loading:938899148927827979> **LOADING...**`);
+            if (option1 == `restartall`) consolecmd = `pm2 restart all`;
+            let tmpmessage = await message.reply(`<a:loading:938899148927827979> **Loading...**`);
             if (serverid != `search`) {
                 const conn = new Client();
                 try {
@@ -1898,7 +2405,7 @@ module.exports = async(client) => {
                                 }
                                 showdata += data + "\n";
                             }).stderr.on('data', (data) => {
-                                showdata += "{ERROR}  ::  " + data.split("\n").join("\n{ERROR}  ::  ") + "\n";
+                                showdata += "{ERROR}  ::  " + data.toString().split("\n").join("\n{ERROR}  ::  ") + "\n";
                             });
                         });
                     }).connect({
@@ -1939,7 +2446,7 @@ module.exports = async(client) => {
                                                     .replace("│ default     │", "").replace("default", "")
                                                     .replace("│ disabled |", "").replace("disabled", "")
                                                     .replace("│ root     |", "").replace("root", "")
-                                                    .replace("│ Protyo   |", "").replace("Protyo", "")
+                                                    .replace("│ protyo   |", "").replace("protyo", "")
                                                     .replace("│  │", "").replace("5.0.2", "").split("│").map(i => String(i).trim());
                                                 alldata += `SERVER: #${key != 155 ? key : 204} | BOTID: #${d[1]} | NAME: ${String(d[2]).split(" ")[String(d[2]).split(" ").findIndex(d => d.includes("_"))]} | STATE: ${d[5]}\n`;
                                             }
@@ -1948,7 +2455,7 @@ module.exports = async(client) => {
                                         }).on('data', (data) => {
                                             showdata += data + "\n";
                                         }).stderr.on('data', (data) => {
-                                            showdata += "{ERROR}  ::  " + data.split("\n").join("\n{ERROR}  ::  ") + "\n";
+                                            showdata += "{ERROR}  ::  " + data.toString().split("\n").join("\n{ERROR}  ::  ") + "\n";
                                         });
                                     });
                                 }).on("error", (e) => {
@@ -2023,8 +2530,8 @@ module.exports = async(client) => {
                 })
                 let data = client.bots.get(user.id, "info");
                 if (!data || data.type == "Default") throw "E";
-                let server = data.split("\n")[6].split(",")[0];
-                let path = data.split("\n")[2];
+                let server = data.toString().split("\n")[6].split(",")[0];
+                let path = data.toString().split("\n")[2];
                 let {
                     servers,
                     usernames,
@@ -2105,8 +2612,8 @@ module.exports = async(client) => {
                 })
                 let data = client.bots.get(user.id, "info");
                 if (!data || data.type == "Default") throw "E";
-                let server = data.split("\n")[6].split(",")[0];
-                let path = data.split("\n")[2];
+                let server = data.toString().split("\n")[6].split(",")[0];
+                let path = data.toString().split("\n")[2];
                 let BotFileName = path.split("/")[path.split("/").length - 1]
                 let {
                     servers,
@@ -2124,7 +2631,7 @@ module.exports = async(client) => {
                         stream.on('close', (code, signal) => {
                             setTimeout(()=>{
                                 if(!showdata || showdata.length < 2) return message.reply("<a:crossred:939238440359321600> **Could not find the Bot as a hosted bot!**");
-                                alldata = showdata.split(" ")[1]
+                                alldata = showdata.toString().split(" ")[1]
                                 if(alldata){
                                     let botid = parseInt(alldata)
 
@@ -2162,7 +2669,7 @@ module.exports = async(client) => {
                         }).on('data', (data) => {
                             showdata += data + "\n";
                         }).stderr.on('data', (data) => {
-                            showdata += "{ERROR}  ::  " + data.split("\n").join("\n{ERROR}  ::  ") + "\n";
+                            showdata += "{ERROR}  ::  " + data.toString().split("\n").join("\n{ERROR}  ::  ") + "\n";
                         });
                     });
                 }).connect({
@@ -2175,6 +2682,11 @@ module.exports = async(client) => {
                 console.log(e.stack ? String(e.stack).grey : String(e).grey)
                 return message.reply("<a:crossred:939238440359321600> There is no detail Data about this Bot :c")
             }
+        } else if (cmd === "noguildremovebothost") {
+            if (message.member.roles.highest.rawPosition < message.guild.roles.cache.get(Roles.FounderId).rawPosition)
+                return message.reply("<a:crossred:939238440359321600> You are not allowed to execute this Command! (Only FOUNDERS)");
+                
+                return message.reply("<a:crossred:939238440359321600>**This Command is currently not available;**") 
         } 
         
         else if (cmd === "startbot") {
@@ -2195,8 +2707,8 @@ module.exports = async(client) => {
                 })
                 let data = client.bots.get(user.id, "info");
                 if (!data || data.type == "Default") throw "E";
-                let server = data.split("\n")[6].split(",")[0];
-                let path = data.split("\n")[2];
+                let server = data.toString().split("\n")[6].split(",")[0];
+                let path = data.toString().split("\n")[2];
                 let BotFileName = path.split("/")[path.split("/").length - 1]
                 let {
                     servers,
@@ -2216,11 +2728,11 @@ module.exports = async(client) => {
                                 if(!showdata || showdata.length < 2) return message.reply("<a:crossred:939238440359321600> **Could not find the Bot as a hosted bot!**");
                                 if(showdata.includes("online")) return message.reply("<a:crossred:939238440359321600> **This Bot is already started/online!**");
                                 if(showdata.includes("errored")) return message.reply("<a:crossred:939238440359321600> **This Bot has got an error while hosting!**");
-                                alldata = showdata.split(" ")[1]
+                                alldata = showdata.toString().split(" ")[1]
                                 if(alldata){
                                     let botid = parseInt(alldata);
 
-                                    logAction(client, "botmanagement", message.author, `GREEN`, `https://cdn.discordapp.com/emojis/862306785007632385.png`, `👍 **Started the Bot:** ${user} | ${user.tag} (\`${user.id}\`)\n**Path:** \`${path}\`\n**Host:** \`${server}\``)
+                                    logAction(client, "botmanagement", message.author, `#57F287`, `https://cdn.discordapp.com/emojis/862306785007632385.png`, `👍 **Started the Bot:** ${user} | ${user.tag} (\`${user.id}\`)\n**Path:** \`${path}\`\n**Host:** \`${server}\``)
                                     
                                     conn.exec(`pm2 start ${botid}`, (err, stream) => {
                                         if (err) throw err;
@@ -2254,7 +2766,7 @@ module.exports = async(client) => {
                         }).on('data', (data) => {
                             showdata += data + "\n";
                         }).stderr.on('data', (data) => {
-                            showdata += "{ERROR}  ::  " + data.split("\n").join("\n{ERROR}  ::  ") + "\n";
+                            showdata += "{ERROR}  ::  " + data.toString().split("\n").join("\n{ERROR}  ::  ") + "\n";
                         });
                     });
                 }).connect({
@@ -2284,10 +2796,9 @@ module.exports = async(client) => {
                     type: "Default"
                 })
                 let data = client.bots.get(user.id, "info");
-                console.log(data)
                 if (!data || data.type == "Default") throw "E";
-                let server = data.split("\n")[6].split(",")[0];
-                let path = data.split("\n")[2];
+                let server = data.toString().split("\n")[6].split(",")[0];
+                let path = data.toString().split("\n")[2];
                 let BotFileName = path.split("/")[path.split("/").length - 1]
                 let {
                     servers,
@@ -2307,11 +2818,11 @@ module.exports = async(client) => {
                                 if(!showdata || showdata.length < 2) return message.reply("<a:crossred:939238440359321600> **Could not find the Bot as a hosted bot!**");
                                 //if(showdata.includes("online")) return message.reply("<a:crossred:939238440359321600> **This Bot is already started/online!**");
                                 //if(showdata.includes("errored")) return message.reply("<a:crossred:939238440359321600> **This Bot has got an error while hosting!**");
-                                alldata = showdata.split(" ")[1]
+                                alldata = showdata.toString().split(" ")[1]
                                 if(alldata){
                                     let botid = parseInt(alldata);
 
-                                    logAction(client, "botmanagement", message.author, `GREEN`, `https://cdn.discordapp.com/emojis/862306785007632385.png`, `👍 **Force-Started the Bot:** ${user} | ${user.tag} (\`${user.id}\`)\n**Path:** \`${path}\`\n**Host:** \`${server}\``)
+                                    logAction(client, "botmanagement", message.author, `#57F287`, `https://cdn.discordapp.com/emojis/862306785007632385.png`, `👍 **Force-Started the Bot:** ${user} | ${user.tag} (\`${user.id}\`)\n**Path:** \`${path}\`\n**Host:** \`${server}\``)
                                     
                                     conn.exec(`pm2 start ${botid}`, (err, stream) => {
                                         if (err) throw err;
@@ -2345,7 +2856,7 @@ module.exports = async(client) => {
                         }).on('data', (data) => {
                             showdata += data + "\n";
                         }).stderr.on('data', (data) => {
-                            showdata += "{ERROR}  ::  " + data.split("\n").join("\n{ERROR}  ::  ") + "\n";
+                            showdata += "{ERROR}  ::  " + data.toString().split("\n").join("\n{ERROR}  ::  ") + "\n";
                         });
                     });
                 }).connect({
@@ -2376,8 +2887,8 @@ module.exports = async(client) => {
                 })
                 let data = client.bots.get(user.id, "info");
                 if (!data || data.type == "Default") throw "E";
-                let server = data.split("\n")[6].split(",")[0];
-                let path = data.split("\n")[2];
+                let server = data.toString().split("\n")[6].split(",")[0];
+                let path = data.toString().split("\n")[2];
                 let BotFileName = path.split("/")[path.split("/").length - 1]
                 let {
                     servers,
@@ -2397,7 +2908,7 @@ module.exports = async(client) => {
                                 if(!showdata || showdata.length < 2) return message.reply("<a:crossred:939238440359321600> **Could not find the Bot as a hosted bot!**");
                                 if(!showdata.includes("online")) return message.reply("<a:crossred:939238440359321600> **This Bot is not started/online!**");
                                 if(showdata.includes("errored")) return message.reply("<a:crossred:939238440359321600> **This Bot has got an error while hosting!**");
-                                alldata = showdata.split(" ")[1]
+                                alldata = showdata.toString().split(" ")[1]
                                 if(alldata){
                                     let botid = parseInt(alldata);
 
@@ -2435,7 +2946,7 @@ module.exports = async(client) => {
                         }).on('data', (data) => {
                             showdata += data + "\n";
                         }).stderr.on('data', (data) => {
-                            showdata += "{ERROR}  ::  " + data.split("\n").join("\n{ERROR}  ::  ") + "\n";
+                            showdata += "{ERROR}  ::  " + data.toString().split("\n").join("\n{ERROR}  ::  ") + "\n";
                         });
                     });
                 }).connect({
@@ -2466,8 +2977,8 @@ module.exports = async(client) => {
                 })
                 let data = client.bots.get(user.id, "info");
                 if (!data || data.type == "Default") throw "E";
-                let server = data.split("\n")[6].split(",")[0];
-                let path = data.split("\n")[2];
+                let server = data.toString().split("\n")[6].split(",")[0];
+                let path = data.toString().split("\n")[2];
                 let BotFileName = path.split("/")[path.split("/").length - 1]
                 let {
                     servers,
@@ -2487,7 +2998,7 @@ module.exports = async(client) => {
                                 if(!showdata || showdata.length < 2) return message.reply("<a:crossred:939238440359321600> **Could not find the Bot as a hosted bot!**");
                                 //if(!showdata.includes("online")) return message.reply("<a:crossred:939238440359321600> **This Bot is not started/online!**");
                                 //if(showdata.includes("errored")) return message.reply("<a:crossred:939238440359321600> **This Bot has got an error while hosting!**");
-                                alldata = showdata.split(" ")[1]
+                                alldata = showdata.toString().split(" ")[1]
                                 if(alldata){
                                     let botid = parseInt(alldata);
 
@@ -2525,7 +3036,7 @@ module.exports = async(client) => {
                         }).on('data', (data) => {
                             showdata += data + "\n";
                         }).stderr.on('data', (data) => {
-                            showdata += "{ERROR}  ::  " + data.split("\n").join("\n{ERROR}  ::  ") + "\n";
+                            showdata += "{ERROR}  ::  " + data.toString().split("\n").join("\n{ERROR}  ::  ") + "\n";
                         });
                     });
                 }).connect({
@@ -2556,8 +3067,8 @@ module.exports = async(client) => {
                 })
                 let data = client.bots.get(user.id, "info");
                 if (!data || data.type == "Default") throw "E";
-                let server = data.split("\n")[6].split(",")[0];
-                let path = data.split("\n")[2];
+                let server = data.toString().split("\n")[6].split(",")[0];
+                let path = data.toString().split("\n")[2];
                 let BotFileName = path.split("/")[path.split("/").length - 1]
                 let {
                     servers,
@@ -2577,7 +3088,7 @@ module.exports = async(client) => {
                                 if(!showdata || showdata.length < 2) return message.reply("<a:crossred:939238440359321600> **Could not find the Bot as a hosted bot!**");
                                 if(showdata.includes("stopped")) return message.reply("<a:crossred:939238440359321600> **This Bot is already stopped!**");
                                 if(showdata.includes("errored")) return message.reply("<a:crossred:939238440359321600> **This Bot has got an error while hosting!**");
-                                alldata = showdata.split(" ")[1]
+                                alldata = showdata.toString().split(" ")[1]
                                 if(alldata){
                                     let botid = parseInt(alldata)
 
@@ -2615,7 +3126,7 @@ module.exports = async(client) => {
                         }).on('data', (data) => {
                             showdata += data + "\n";
                         }).stderr.on('data', (data) => {
-                            showdata += "{ERROR}  ::  " + data.split("\n").join("\n{ERROR}  ::  ") + "\n";
+                            showdata += "{ERROR}  ::  " + data.toString().split("\n").join("\n{ERROR}  ::  ") + "\n";
                         });
                     });
                 }).connect({
@@ -2624,6 +3135,272 @@ module.exports = async(client) => {
                     username: usernames[server],
                     password: passwords[server]
                 });
+            } catch (e) {
+                console.log(e.stack ? String(e.stack).grey : String(e).grey)
+                return message.reply("<a:crossred:939238440359321600> There is no detail Data about this Bot :c")
+            }
+        } else if (cmd === "stopfreebots") {
+            if (message.member.roles.highest.rawPosition < message.guild.roles.cache.get(Roles.FounderId).rawPosition)
+                return message.reply("<a:crossred:939238440359321600> You are not allowed to execute this Command! (Only FounderId)");
+            try {
+                let {
+                    servers,
+                    usernames,
+                    passwords
+                } = client.config;
+                let server = args[0]
+                let theserver = servers[server];
+                if(!server) {
+                    return message.reply("<a:crossred:939238440359321600> Please provide which server to check!")
+                }
+                if(!theserver) return message.reply("<a:crossred:939238440359321600> Could not find the Server for the Bots to stop");
+                
+                // ALl Bots payed via invite payment on this host
+                let normalbots = client.payments.get("payments", "users").map(d => d.bot).filter(Boolean);
+                let invitedata = client.payments.get("invitepayments", "users").map(d => d.bot).filter(Boolean);
+                invitedata = invitedata.filter(d => !normalbots.includes(d))
+                    .filter(id => {
+                        client.bots.ensure(id, {
+                            info: "No Info available",
+                            type: "Default"
+                        })
+                        return Number(client.bots.get(id, "info")?.toString()?.split("\n")?.[6]?.split(",")?.[0]) == Number(args[0])
+                    })
+                    .map(d => {
+                        let data = client.bots.get(d, "info");
+                        let path = data.toString().split("\n")[2];
+                        return {
+                            id: d,
+                            data: data,
+                            path: data.toString().split("\n")[2],
+                            BotFileName: path.split("/")[path.split("/").length - 1]
+                        }
+                    });
+                //current Server
+                var conn = new Client();
+                conn.on('ready', async () => {
+                    async function trytostopbot(botdata) {
+                        return new Promise((res) => {
+                            conn.exec(`pm2 list | grep '${botdata.BotFileName}' --ignore-case`, (err, stream) => {
+                                if (err) throw err;
+                                let showdata = "";
+                                stream.on('close', (code, signal) => {
+                                    setTimeout(()=>{
+                                        if(!showdata || showdata.length < 2) {return res(true);}
+                                        alldata = showdata.toString().split(" ")[1]
+                                        if(alldata){
+                                            let botid = parseInt(alldata)
+
+                                            logAction(client, "botmanagement", message.author, `#00001`, `https://cdn.discordapp.com/emojis/862306785133592636.png`, `👍 **Stopped the Bot:** <@${botdata.id}>\n**Path:** \`${botdata.path}\`\n**Host:** \`${server}\``)
+                                            
+                                            conn.exec(`pm2 delete ${botid}`, (err, stream) => {
+                                                if (err) throw err;
+                                                stream.on('close', (code, signal) => {
+                                                    setTimeout(() => {
+                                                        message.reply(`👍 **Stopped the Bot:** <@${botdata.id}> (\`${botid}\`)\n**Path:** \`${botdata.path}\`\n**Host:** \`${server}\``)
+                                                        return res(true);
+                                                    }, 250)
+                                                }).on('data', (data) => {
+                                                }).stderr.on('data', (data) => {
+                                                    if(data && data.toString().length > 2) {
+                                                        console.log(data.toString());
+                                                        message.reply(`<a:crossred:939238440359321600> **Something went wrong (pm2 delete)!**\n\`\`\`${data.toString().substr(0, 1800)}\`\`\``)
+                                                    }
+                                                });
+                                            });
+                                        } else {
+                                            message.reply(`<a:crossred:939238440359321600> **Unable to Stop the Bot:** <@${botdata.id}>`)
+                                            return res(true);
+                                        }
+                                    }, 300)
+                                }).on('data', (data) => {
+                                    showdata += data + "\n";
+                                }).stderr.on('data', (data) => {
+                                    showdata += "{ERROR}  ::  " + data.toString().split("\n").join("\n{ERROR}  ::  ") + "\n";
+                                });
+                            });
+
+                        })
+                    }
+                    for(const botdata of invitedata) {
+                        console.log(`Stopping The BOT`)
+                        console.log({id: botdata.id,path: botdata.path,BotFileName: botdata.BotFileName})
+                        await trytostopbot(botdata);
+                    }
+                    message.reply("FINISHED");
+                    conn.end();
+                }).connect({
+                    host: theserver,
+                    port: 22,
+                    username: usernames[args[0]],
+                    password: passwords[args[0]]
+                });
+                //new Server
+            } catch (e) {
+                console.log(e.stack ? String(e.stack).grey : String(e).grey)
+                return message.reply("<a:crossred:939238440359321600> There is no detail Data about this Bot :c")
+            }
+        } else if (cmd === "migratebot") {
+            if (message.member.roles.highest.rawPosition < message.guild.roles.cache.get(Roles.FounderId).rawPosition)
+                return message.reply("<a:crossred:939238440359321600> You are not allowed to execute this Command! (Only FounderId)");
+            try {
+                var user;
+                try {
+                    user = await GetBot(message, args);
+                } catch (e) {
+                    console.log(e.stack ? String(e.stack).grey : String(e).grey)
+                    return message.reply("ERROR:" + e)
+                }
+                if (!user || !user.id) return message.reply("<a:crossred:939238440359321600> Did not find the BOT ... ERROR")
+                client.bots.ensure(user.id, {
+                    info: "No Info available",
+                    type: "Default"
+                })
+                let data = client.bots.get(user.id, "info");
+                if (!data || data.type == "Default") throw "E";
+                let server = data.toString().split("\n")[6].split(",")[0];
+                let path = data.toString().split("\n")[2];
+                let BotFileName = path.split("/")[path.split("/").length - 1];
+                if(!path.endsWith("/")) path = `${path}/`;
+                const newpath = path.replace(BotFileName, `Migrated_${BotFileName}`);
+                let {
+                    servers,
+                    usernames,
+                    passwords
+                } = client.config;
+                args.shift();
+                let theserver = servers[server];
+                if(!args[0]) {
+                    return message.reply("<a:crossred:939238440359321600> Please provide which server to migrate the bot to!")
+                }
+                let newtheserver = servers[args[0]];
+                if(!theserver) return message.reply("<a:crossred:939238440359321600> Could not find the Server for the Bot");
+                if(!newtheserver) return message.reply("<a:crossred:939238440359321600> Could not find the Server for: " + args[0]);
+                //current Server
+                var conn = new Client();
+                let tmpmsg = await message.reply(`👍 **Attempting to build connection to the V-SERVER of the BOT** ...`)
+                conn.on('ready', () => {
+                    conn.exec(`pm2 list | grep '${BotFileName}' --ignore-case`, (err, stream) => {
+                        if (err) throw err;
+                        let showdata = "";
+                        stream.on('close', (code, signal) => {
+                            setTimeout(()=>{
+                                if(!showdata || showdata.length < 2) return message.reply("<a:crossred:939238440359321600> **Could not find the Bot as a hosted bot!**");
+                                if(showdata.includes("stopped")) return message.reply("<a:crossred:939238440359321600> **This Bot is already stopped!**");
+                                if(showdata.includes("errored")) return message.reply("<a:crossred:939238440359321600> **This Bot has got an error while hosting!**");
+                                alldata = showdata.toString().split(" ")[1]
+                                if(alldata){
+                                    let botid = parseInt(alldata)
+
+                                    logAction(client, "botmanagement", message.author, `#00001`, `https://cdn.discordapp.com/emojis/862306785133592636.png`, `👍 **Stopped the Bot:** ${user} | ${user.tag} (\`${user.id}\`)\n**Path:** \`${path}\`\n**Host:** \`${server}\``)
+                                    
+                                    conn.exec(`pm2 delete ${botid}`, (err, stream) => {
+                                        if (err) throw err;
+                                        stream.on('close', (code, signal) => {
+                                            setTimeout(() => {
+                                                conn.exec("pm2 save", (err, stream) => {
+                                                    stream.on('close', async (code, signal) => {
+                                                        let msgstring = `👍 **Stopped the Bot:** ${user} | ${user.tag} (\`${user.id}\`)\n**Path:** \`${path}\`\n**Host:** \`${server}\``
+                                                        tmpmsg = await tmpmsg.edit(`${msgstring}\n> *Now transferring the Bot*`)
+                                                        
+                                                        
+                                                        // 
+                                                        conn.exec(`rsync -rav -e "sshpass -p '${passwords[args[0]]}' ssh -o StrictHostKeyChecking=no" --progress ${path} ${usernames[args[0]]}@${newtheserver}:${newpath}`, (err, stream) => {
+                                                            stream.on('close', async (code, signal) => {
+                                                                msgstring = `${msgstring}\n\n👍 **Transferred the Bot:** ${user} | ${user.tag} (\`${user.id}\`)\n**Path:** \`${newpath}\`\n**Host:** \`${newtheserver}\``;
+                                                                tmpmsg = await tmpmsg.edit(`${msgstring}\n> *Now starting the Bot*`)
+                                                                
+                                                                conn.end();
+                                                                
+                                                                // Start it on the new host
+                                                                setTimeout(() => {
+                                                                    var conn = new Client();
+                                                                    conn.on('ready', () => {
+                                                                        conn.exec(`cd '${newpath}'; pm2 start ecosystem.config.js`, (err, stream) => {
+                                                                            if (err) return console.log(err);
+                                                                            
+                                                                            stream.on('close', (code, signal) => {
+                                                                               
+                                                                                setTimeout(() => {
+                                                                                    conn.exec("pm2 save", (err, stream) => {
+                                                                                        if (err) return console.log(err);
+                                                                                        stream.on('close', async (code, signal) => {
+                                                                                            tmpmsg = await tmpmsg.edit(`${msgstring}\n\n👍 **Started & Fully Migrated the Bot:** ${user} | ${user.tag} (\`${user.id}\`)\n**Path:** \`${newpath}\`\n**Host:** \`${newtheserver}\``);
+                                                                                            client.bots.set(user.id, data.replace(BotFileName, `Migrated_${BotFileName}`).replace(server, args[0]), "info");
+                 
+                                                                                            conn.end();
+                                                                                        }).on('data', (data) => { 
+
+                                                                                        }).stderr.on('data', (data) => {
+
+                                                                                        });
+                                                                                    })
+                                                                                }, 250);
+                                                                            }).on('data', (data) => { 
+
+                                                                            }).stderr.on('data', (data) => {
+                                                                                if(data && data.toString().length > 1){
+                                                                                    console.log(data.toString());
+                                                                                    failed = true;
+                                                                                    return message.reply("<a:crossred:939238440359321600> This Bot Path is not existing")
+                                                                                }
+                                                                            });
+                                                                        })
+                                                                    }).connect({
+                                                                        host: newtheserver,
+                                                                        port: 22,
+                                                                        username: usernames[args[0]],
+                                                                        password: passwords[args[0]]
+                                                                    });
+
+                                                                }, 1000)
+                                                                // End of starting on the new host
+
+                                                            }).on('data', (data) => {
+                                                            }).stderr.on('data', (data) => {
+                                                                function isAddHost(string) {
+                                                                    return string.includes("permanently") && string.includes("hosts")&& string.includes("hosts")
+                                                                }
+                                                                if(data && data.toString().length > 2 && !isAddHost(data.toString().toLowerCase())) {
+                                                                    console.log(data.toString());
+                                                                    message.reply(`<a:crossred:939238440359321600> **Something went wrong (RSYNC)!**\n\`\`\`${data.toString().substr(0, 1800)}\`\`\``)
+                                                                }
+                                                            });
+                                                        })
+                                                    }).on('data', (data) => {
+                                                    }).stderr.on('data', (data) => {
+                                                        if(data && data.toString().length > 2) {
+                                                            console.log(data.toString());
+                                                            message.reply(`<a:crossred:939238440359321600> **Something went wrong (pm2 save)!**\n\`\`\`${data.toString().substr(0, 1800)}\`\`\``)
+                                                        }
+                                                    });
+                                                })
+                                            })
+                                        }).on('data', (data) => {
+                                        }).stderr.on('data', (data) => {
+                                            if(data && data.toString().length > 2) {
+                                                console.log(data.toString());
+                                                message.reply(`<a:crossred:939238440359321600> **Something went wrong (pm2 delete)!**\n\`\`\`${data.toString().substr(0, 1800)}\`\`\``)
+                                            }
+                                        });
+                                    });
+                                } else {
+                                    return message.reply(`<a:crossred:939238440359321600> **Unable to Stop the Bot:** ${bot.user} | ${bot.user.tag} (\`${bot.user.id}\`)`)
+                                }
+                            }, 300)
+                        }).on('data', (data) => {
+                            showdata += data + "\n";
+                        }).stderr.on('data', (data) => {
+                            showdata += "{ERROR}  ::  " + data.toString().split("\n").join("\n{ERROR}  ::  ") + "\n";
+                        });
+                    });
+                }).connect({
+                    host: theserver,
+                    port: 22,
+                    username: usernames[server],
+                    password: passwords[server]
+                });
+                //new Server
             } catch (e) {
                 console.log(e.stack ? String(e.stack).grey : String(e).grey)
                 return message.reply("<a:crossred:939238440359321600> There is no detail Data about this Bot :c")
@@ -2646,8 +3423,8 @@ module.exports = async(client) => {
                 })
                 let data = client.bots.get(user.id, "info");
                 if (!data || data.type == "Default") throw "E";
-                let server = data.split("\n")[6].split(",")[0];
-                let path = data.split("\n")[2];
+                let server = data.toString().split("\n")[6].split(",")[0];
+                let path = data.toString().split("\n")[2];
                 let BotFileName = path.split("/")[path.split("/").length - 1]
                 let {
                     servers,
@@ -2667,7 +3444,7 @@ module.exports = async(client) => {
                                 if(!showdata || showdata.length < 2) return message.reply("<a:crossred:939238440359321600> **Could not find the Bot as a hosted bot!**");
                                 //if(showdata.includes("stopped")) return message.reply("<a:crossred:939238440359321600> **This Bot is already stopped!**");
                                 //if(showdata.includes("errored")) return message.reply("<a:crossred:939238440359321600> **This Bot has got an error while hosting!**");
-                                alldata = showdata.split(" ")[1]
+                                alldata = showdata.toString().split(" ")[1]
                                 if(alldata){
                                     let botid = parseInt(alldata)
 
@@ -2677,7 +3454,7 @@ module.exports = async(client) => {
                                         if (err) throw err;
                                         stream.on('close', (code, signal) => {
                                             setTimeout(() => {
-                                                conn.exec("pm2 save", (err, stream) => {
+                                                conn.exec("pm2 save\`", (err, stream) => {
                                                     stream.on('close', (code, signal) => {
                                                         message.reply(`👍 **Force-Stopped the Bot:** ${user} | ${user.tag} (\`${user.id}\`)\n**Path:** \`${path}\`\n**Host:** \`${server}\``)
                                                         conn.end();
@@ -2705,7 +3482,7 @@ module.exports = async(client) => {
                         }).on('data', (data) => {
                             showdata += data + "\n";
                         }).stderr.on('data', (data) => {
-                            showdata += "{ERROR}  ::  " + data.split("\n").join("\n{ERROR}  ::  ") + "\n";
+                            showdata += "{ERROR}  ::  " + data.toString().split("\n").join("\n{ERROR}  ::  ") + "\n";
                         });
                     });
                 }).connect({
@@ -2723,7 +3500,7 @@ module.exports = async(client) => {
         /**
          * OWNER BOT DATABASING COMMANDS
          */
-        else if (cmd === "bots") {
+        else if (cmd === "bots" || cmd === "wallet") {
             var user;
             try {
                 user = await GetUser(message, args);
@@ -2741,7 +3518,7 @@ module.exports = async(client) => {
                     .setColor(client.config.color)
                     .setAuthor(`${user.username}'s Bots`, user.displayAvatarURL({
                         dynamic: true
-                    }), "https://kooje.eu")
+                    }), "https://discord.gg/kooje")
                     .setDescription(bots.length > 0 ? bots.map(bot => `**${client.bots.get(bot, "type")}** | <@${bot}> | [Invite](https://discord.com/oauth2/authorize?client_id=${bot}&scope=bot&permissions=8)`).join("\n") : "He has no Bots yet!")
                     .setTimestamp()
                 ]
@@ -2797,7 +3574,7 @@ module.exports = async(client) => {
                 .setColor(client.config.color)
                 .setAuthor(`${user.username} owns this bot and: `, user.displayAvatarURL({
                     dynamic: true
-                }), "https://kooje.eu")
+                }), "https://discord.gg/kooje")
                 .setDescription(bots.length > 0 ? bots.map(bot => `**${client.bots.get(bot, "type")}** | <@${bot}> | [Invite](https://discord.com/oauth2/authorize?client_id=${bot}&scope=bot&permissions=8)`).join("\n") : "He has no Bots yet!")
                 .setTimestamp().setFooter("ID: " + user.id, user.displayAvatarURL({
                     dynamic: true
@@ -2806,7 +3583,7 @@ module.exports = async(client) => {
                 content: "OWNER INFORMATION",
                 embeds: [embed]
             })
-        } else if (cmd === "addbot") {
+        } else if (cmd === "addbot" || cmd === "addwallet") {
             if (message.member.roles.highest.rawPosition < message.guild.roles.cache.get(Roles.ChiefBotCreatorRoleId).rawPosition) return message.reply("You are not allowed to execute that Command!")
             var user;
             try {
@@ -2832,7 +3609,7 @@ module.exports = async(client) => {
                     .setColor(client.config.color)
                     .setAuthor(`SUCCESS!`, user.displayAvatarURL({
                         dynamic: true
-                    }), "https://kooje.eu")
+                    }), "https://discord.gg/kooje")
                     .setDescription(`Added: <@${bot.id}> | [Invite](https://discord.com/oauth2/authorize?client_id=${bot.id}&scope=bot&permissions=8) to <@${user.id}>`)
                     .setTimestamp()
                 ]
@@ -2876,7 +3653,7 @@ module.exports = async(client) => {
                     .setColor(client.config.color)
                     .setAuthor(`SUCCESS!`, user.displayAvatarURL({
                         dynamic: true
-                    }), "https://kooje.eu")
+                    }), "https://discord.gg/kooje")
                     .setDescription(`Changed: <@${bot.id}> | [Invite](https://discord.com/oauth2/authorize?client_id=${bot.id}&scope=bot&permissions=8) to <@${user.id}> ${olduser ? olduser.id != user.id ? `from <@${olduser.id}>` : "" : ""}`)
                     .setTimestamp()
                 ]
@@ -2904,8 +3681,8 @@ module.exports = async(client) => {
                     .setColor(client.config.color)
                     .setAuthor(`SUCCESS!`, user.displayAvatarURL({
                         dynamic: true
-                    }), "https://kooje.eu")
-                    .setDescription(`Removed: <@${bot.id}> from <@${user.id}>`)
+                    }), "https://discord.gg/kooje")
+                    .setDescription(`Removed: <@${bot.id}> | [Invite](https://discord.com/oauth2/authorize?client_id=${bot.id}&scope=bot&permissions=8) from <@${user.id}>`)
                     .setTimestamp()
                 ]
             })
@@ -2919,9 +3696,10 @@ module.exports = async(client) => {
                 embeds: [
                     new Discord.MessageEmbed()
                     .setColor(client.config.color)
-                    .setAuthor("Kooje | Bot Shop | How to Order", message.guild.iconURL({dynamic: true}), "https://kooje.eu")
-                    .setDescription(`***1.*** Read throug the channel in <#936392309065523221>\n\n***2.*** React to the message of <@938176229918531604> with the right Emoji\n\n***3.*** Answer the Questions in the Ticket\n\n***4.*** Wait a few Minutes :wink:`)
-.setFooter({text: `KooJe.eu | Order Bots NOW`, iconURL:  "https://cdn.discordapp.com/attachments/936985190016897055/938497637060079706/LogoKooJE.png"})
+                    .setAuthor("KooJe | Free Bots Shop | How to Order", message.guild.iconURL({dynamic: true}), "https://discord.gg/kooje")
+                    .setDescription(`1. Read throug the channel in <#840354600463761468>\n\n2. React to the message of <#840331856624615424> with the right Emojis\n\n3. Answer the Questions in the Ticket\n\n4. Wait a few Minutes :wink:`)
+                    .setFooter("kooje.me | Order Free Bots NOW", "https://cdn.discordapp.com/attachments/936985190016897055/938911526683811860/LOGOTRANSPARENT.png")
+                    .setThumbnail("https://cdn.discordapp.com/attachments/936985190016897055/938911526683811860/LOGOTRANSPARENT.png")
                 ]
             })
         } else if (cmd === "modifybot") {
@@ -2929,19 +3707,33 @@ module.exports = async(client) => {
                 embeds: [
                     new Discord.MessageEmbed()
                     .setColor(client.config.color)
-                    .setAuthor("How to Change your Bot?", message.guild.iconURL({dynamic: true}), "https://kooje.eu")
+                    .setAuthor("How to Change your Bot?", message.guild.iconURL({dynamic: true}), "https://discord.gg/kooje")
                     .setDescription(`**There are several options:**\n> To change the Embed Design, you need to use the command\n> \`!setup-embed\`\n\n> To change the Avatar, Name, etc. you need to use the:\n> \`changename\`, \`changeavatar\`, \`changestatus\`, \`prefix\``)
-.setFooter({text: `KooJe.eu | Order Bots NOW`, iconURL:  "https://cdn.discordapp.com/attachments/936985190016897055/938497637060079706/LogoKooJE.png"})
+                    .setFooter("kooje.me | Order Free Bots NOW", "https://cdn.discordapp.com/attachments/936985190016897055/938911526683811860/LOGOTRANSPARENT.png")
+                    .setThumbnail("https://cdn.discordapp.com/attachments/936985190016897055/938911526683811860/LOGOTRANSPARENT.png")
                 ]
             })
+        } else if (cmd === "howtopay") {
+                message.reply({
+                    embeds: [
+                        new Discord.MessageEmbed()
+                        .setColor(client.config.color)
+                        .setAuthor("KooJe | Free Bots Shop | How to Pay", message.guild.iconURL({dynamic: true}), "https://discord.gg/kooje")
+                        .setDescription(`1. Either go to [Bero-Host](https://bero-host.de/spenden/i8iywavcwmob) or to [Paypal](https://www.paypal.com/paypalme/simonprotyo).\n\n2. Enter the amount of money, which is required for your Bot.\n(**We only accept €**)\n\n3. Send a prove, that you paid in your ticket.\n\n4. Wait for **Protyo** to verify your payment.`)
+                        .setFooter("kooje.me | Order Free Bots NOW", "https://cdn.discordapp.com/attachments/936985190016897055/938911526683811860/LOGOTRANSPARENT.png")
+                        .setThumbnail("https://cdn.discordapp.com/attachments/936985190016897055/938911526683811860/LOGOTRANSPARENT.png")
+                    ]
+                })
+            
         } else if (cmd === "sendmessage") {
             message.reply({
-                content: `This embed can be created via this Command: \`\`\`,embed To send a message there are several options!++All available Commands:\n\`embed\`, \`esay\`, \`say\`, \`imgembed\`, \`image\`\n\nYou always need to add Paramters, for example the embed: \`embed TITLE ++ DESCRIPTION\` it is important to add the "++"!\nthe esay: \`esay TEXT\`\n\n**You can also edit, copy and update messages with**\n\`editembed <ID>++<TITLE>++<DESCRIPTION>\`\n\`editimgembed <ID>++<TITLE>++<IMG-LINK>++<DESCRIPTION>\`\n\`updatemessage #chat <ID>\`\n\`copymessage #chat <ID>\`!\`\`\``,
+                content: `This embed can be created via this Command: \`\`\`!embed To send a message there are several options!++All available Commands:\n\`embed\`, \`esay\`, \`say\`, \`imgembed\`, \`image\`\n\nYou always need to add Paramters, for example the embed: \`embed TITLE ++ DESCRIPTION\` it is important to add the "++"!\nthe esay: \`esay TEXT\`\n\n**You can also edit, copy and update messages with**\n\`editembed <ID>++<TITLE>++<DESCRIPTION>\`\n\`editimgembed <ID>++<TITLE>++<IMG-LINK>++<DESCRIPTION>\`\n\`updatemessage #chat <ID>\`\n\`copymessage #chat <ID>\`!\`\`\``,
                 embeds: [new Discord.MessageEmbed()
                     .setColor(client.config.color)
                     .setTitle("To send a message there are several options!")
                     .setDescription(`All available Commands:\n\`embed\`, \`esay\`, \`say\`, \`imgembed\`, \`image\`\n\nYou always need to add Paramters, for example the embed: \`embed TITLE ++ DESCRIPTION\` it is important to add the "++"!\nthe esay: \`esay TEXT\`\n\n**You can also edit, copy and update messages with**\n\`editembed <ID>++<TITLE>++<DESCRIPTION>\`\n\`editimgembed <ID>++<TITLE>++<IMG-LINK>++<DESCRIPTION>\`\n\`updatemessage #chat <ID>\`\n\`copymessage #chat <ID>\`!`)
-.setFooter({text: `KooJe.eu | Order Bots NOW`, iconURL:  "https://cdn.discordapp.com/attachments/936985190016897055/938497637060079706/LogoKooJE.png"})
+                    .setFooter("kooje.me | Order Free Bots NOW", "https://cdn.discordapp.com/attachments/936985190016897055/938911526683811860/LOGOTRANSPARENT.png")
+                    .setThumbnail("https://cdn.discordapp.com/attachments/936985190016897055/938911526683811860/LOGOTRANSPARENT.png")
                 ]
             })
         } else if (cmd === "translate" || cmd === "tr") {
@@ -2957,7 +3749,7 @@ module.exports = async(client) => {
             }).then(res => {
                 let embed = new Discord.MessageEmbed()
                     .setColor(client.config.color)
-                    .setAuthor(`Translated to: ${args[1]}`, "https://imgur.com/0DQuCgg.png", "https://kooje.eu")
+                    .setAuthor(`Translated to: ${args[1]}`, "https://imgur.com/0DQuCgg.png", "https://discord.gg/kooje")
                     .setFooter(`Translated from: ${args[0]}`, message.author.displayAvatarURL({
                         dynamic: true
                     }))
@@ -2995,15 +3787,158 @@ module.exports = async(client) => {
                     .setTitle(`📶 Ping: \`${Math.round(Date.now() - message.createdTimestamp)}ms\`\n\n📶Api Latency: \`${Math.round(client.ws.ping)}ms\``)
                 ]
             })
-        
+        } else if (cmd === "info" || cmd == "stats" || cmd == "about" || cmd == "features") {
+            if (args[0] && args.join(" ").toLowerCase().includes("cl")) {
+                let messagelink = `https://discord.com/channels/934213686468423780/912420703406526464/912422485222379620`;
+                let channelId = messagelink.split("/")[5];
+                let messageId = messagelink.split("/")[6];
+                let Message = await message.channel.send(`<a:loading:938899148927827979> **Getting Informations about:** ${messagelink}`)
+                client.channels.fetch(channelId).then(channel => {
+                    channel.messages.fetch(messageId).then(message => {
+                        Message.edit({
+                            content: `:thumbsup: **Information about \`System Bots\`:** ${messagelink}`,
+                            embeds: message.embeds
+                        })
+                    }).catch(e => {
+                        return Message.edit({
+                            content: `\`\`${e.message ? String(e.message).substr(0, 1900) : String(e).substr(0, 1900)}\`\`\``
+                        })
+                    })
+                }).catch(e => {
+                    return Message.edit({
+                        content: `\`\`${e.message ? String(e.message).substr(0, 1900) : String(e).substr(0, 1900)}\`\`\``
+                    })
+                })
+
+            } else if (args[0] && args.join(" ").toLowerCase().includes("mu")) {
+                let messagelink = `https://discord.com/channels/934213686468423780/912420703406526464/912422446106304562`;
+                let channelId = messagelink.split("/")[5];
+                let messageId = messagelink.split("/")[6];
+                let Message = await message.channel.send(`<a:loading:938899148927827979> **Getting Informations about:** ${messagelink}`)
+                client.channels.fetch(channelId).then(channel => {
+                    channel.messages.fetch(messageId).then(message => {
+                        Message.edit({
+                            content: `:thumbsup: **Information about \`Music Bots\`:** ${messagelink}`,
+                            embeds: message.embeds
+                        })
+                    }).catch(e => {
+                        return Message.edit({
+                            content: `\`\`${e.message ? String(e.message).substr(0, 1900) : String(e).substr(0, 1900)}\`\`\``
+                        })
+                    })
+                }).catch(e => {
+                    return Message.edit({
+                        content: `\`\`${e.message ? String(e.message).substr(0, 1900) : String(e).substr(0, 1900)}\`\`\``
+                    })
+                })
+
+            } else if (args[0] && args.join(" ").toLowerCase().includes("wa")) {
+                let messagelink = `https://discord.com/channels/934213686468423780/912420703406526464/912422375323230208`;
+                let channelId = messagelink.split("/")[5];
+                let messageId = messagelink.split("/")[6];
+                let Message = await message.channel.send(`<a:loading:938899148927827979> **Getting Informations about:** ${messagelink}`)
+                client.channels.fetch(channelId).then(channel => {
+                    channel.messages.fetch(messageId).then(message => {
+                        Message.edit({
+                            content: `:thumbsup: **Information about \`Waitingroom Bots\`:** ${messagelink}`,
+                            embeds: message.embeds
+                        })
+                    }).catch(e => {
+                        return Message.edit({
+                            content: `\`\`${e.message ? String(e.message).substr(0, 1900) : String(e).substr(0, 1900)}\`\`\``
+                        })
+                    })
+                }).catch(e => {
+                    return Message.edit({
+                        content: `\`\`${e.message ? String(e.message).substr(0, 1900) : String(e).substr(0, 1900)}\`\`\``
+                    })
+                })
+
+            } else if (args[0] && args.join(" ").toLowerCase().includes("ry")) {
+                let messagelink = `https://discord.com/channels/934213686468423780/912420703406526464/912422412249870346`;
+                let channelId = messagelink.split("/")[5];
+                let messageId = messagelink.split("/")[6];
+                let Message = await message.channel.send(`<a:loading:938899148927827979> **Getting Informations about:** ${messagelink}`)
+                client.channels.fetch(channelId).then(channel => {
+                    channel.messages.fetch(messageId).then(message => {
+                        Message.edit({
+                            content: `:thumbsup: **Information about \`Rythm Clones\`:** ${messagelink}`,
+                            embeds: message.embeds
+                        })
+                    }).catch(e => {
+                        return Message.edit({
+                            content: `\`\`${e.message ? String(e.message).substr(0, 1900) : String(e).substr(0, 1900)}\`\`\``
+                        })
+                    })
+                }).catch(e => {
+                    return Message.edit({
+                        content: `\`\`${e.message ? String(e.message).substr(0, 1900) : String(e).substr(0, 1900)}\`\`\``
+                    })
+                })
+
+            } else if (args[0] && args.join(" ").toLowerCase().includes("adm")) {
+                let messagelink = `https://discord.com/channels/934213686468423780/936392309065523221/944276114988220477`;
+                let channelId = messagelink.split("/")[5];
+                let messageId = messagelink.split("/")[6];
+                let Message = await message.channel.send(`<a:loading:938899148927827979> **Getting Informations about:** ${messagelink}`)
+                client.channels.fetch(channelId).then(channel => {
+                    channel.messages.fetch(messageId).then(message => {
+                        Message.edit({
+                            content: `:thumbsup: **Information about \`Administration Bots\`:** ${messagelink}`,
+                            embeds: message.embeds
+                        })
+                    }).catch(e => {
+                        return Message.edit({
+                            content: `\`\`${e.message ? String(e.message).substr(0, 1900) : String(e).substr(0, 1900)}\`\`\``
+                        })
+                    })
+                }).catch(e => {
+                    return Message.edit({
+                        content: `\`\`${e.message ? String(e.message).substr(0, 1900) : String(e).substr(0, 1900)}\`\`\``
+                    })
+                })
+
+            } else if (args[0] && args.join(" ").toLowerCase().includes("mod")) {
+                let messagelink = `https://discord.com/channels/934213686468423780/936392309065523221/944276114988220477`;
+                let channelId = messagelink.split("/")[5];
+                let messageId = messagelink.split("/")[6];
+                let Message = await message.channel.send(`<a:loading:938899148927827979> **Getting Informations about:** ${messagelink}`)
+                client.channels.fetch(channelId).then(channel => {
+                    channel.messages.fetch(messageId).then(message => {
+                        Message.edit({
+                            content: `:thumbsup: **Information about \`Mod Mail Bots\`:** ${messagelink}`,
+                            embeds: message.embeds
+                        })
+                    }).catch(e => {
+                        return Message.edit({
+                            content: `\`\`${e.message ? String(e.message).substr(0, 1900) : String(e).substr(0, 1900)}\`\`\``
+                        })
+                    })
+                }).catch(e => {
+                    return Message.edit({
+                        content: `\`\`${e.message ? String(e.message).substr(0, 1900) : String(e).substr(0, 1900)}\`\`\``
+                    })
+                })
+            } else {
+                message.reply({
+                    content: `**To get more detail Information about our Bot(s) Type:**\n> \`,info <System / Music / Waitingroom / Admin / Rythm / Mod Mail>\``,
+                    embeds: [
+                        new Discord.MessageEmbed().setColor(client.config.color)
+                        .setTitle(`KooJe Development | Get Free/Cheap Discord Bots for your needs!`)
+                        .setDescription(`**If you want to Order a Bot go to <#840354600463761468>**\n> *In there you will find all needed Bot Informations!*\n\nYou can pay via \`Invites\` / \`Donation\`\n> We accept Paypal, Paysafe, Sofort Donations!\n> If you pay via **invites** Then your bot will be hosted for as long as your Invited Members stay in the Server!\n\nWe provide free 24/7 Uptime, and regular Updates as well as **PREMIUM INSTANT SUPPORT!**\n\nFor Help visit <#840332764603351101>\n\nIf you want to request a Feature / If you have an Idea, check out <#840881545086763039>\n\nIf you have to report a Bug, which is not for SELFHOSTING, visit <#853379230683365416>\n\n**Still not convinced?** Check out <#937678247011954738>\nIf you want to get fast Information help, without making a Ticket DM <@889789099899244544>`)
+                        .setFooter(`KooJe Development | Order Today! Order Cheap!`, message.guild.iconURL({
+                            dynamic: true
+                        }))
+                    ]
+                })
+            }
         } else if (cmd === "invite") {
             if (!args[0]) return message.reply({
                 embeds: [new Discord.MessageEmbed().setColor(client.config.color)
-                    .setFooter("Kooje | Free Bots | ORDER NOW", message.guild.iconURL({dynamic: true}))
+                    .setFooter("KooJe | Free Bots | ORDER NOW", message.guild.iconURL({dynamic: true}))
                     .setThumbnail(message.guild.iconURL({dynamic: true}))
                     .setTitle("<a:crossred:939238440359321600> Invalid Usage")
-                    .setDescription("To get the invite Link of one of your Bots simply type: `,invite @YOURBOT`\n\nExample: ,invite <@939584484431503362>\nWill give: https://discord.com/oauth2/authorize?client_id=734513783338434591&scope=bot&permissions=8\n\nWebsite Generator: https://invite.kooje.eu")
-                ]
+                    .addField("📯 Invite link: ", `> [Click here](https://discord.com/oauth2/authorize?client_id=${user.id}&scope=bot&permissions=8)\n`)                ]
             })
             else {
                 var user;
@@ -3019,7 +3954,7 @@ module.exports = async(client) => {
                         .setAuthor(`Invite link for: ${user.tag}`, user.displayAvatarURL(), `https://discord.com/oauth2/authorize?client_id=${user.id}&scope=bot&permissions`)
                         .setThumbnail(user.displayAvatarURL())
                         .setFooter(`ID: ${user.id}`)
-                        .addField("📯 Invite link: ", `> [Click here](https://discord.com/oauth2/authorize?client_id=${user.id}&scope=bot&permissions=8)\n\nGenerated through: https://invite.Kooje.eu`)
+                        .addField("📯 Invite link: ", `> [Click here](https://discord.com/oauth2/authorize?client_id=${user.id}&scope=bot&permissions=8)`)
                     ]
                 })
             }
@@ -3029,7 +3964,7 @@ module.exports = async(client) => {
          * DEVELOPER COMMAND
          */
         else if (cmd === "eval"){
-            if(message.author.id != "717416034478456925") return message.reply("<a:crossred:939238440359321600> Only **Protyo** is allowed to execute this Command");
+            if(message.author.id != "717416034478456925") return message.reply("<a:crossred:939238440359321600> Only Protyo is allowed to execute this Command");
             const { inspect } = require(`util`);
             let evaled;
             try {
@@ -3086,9 +4021,9 @@ module.exports = async(client) => {
                     .setAuthor(bot.tag, bot.displayAvatarURL())
                     .setTitle(`<:like:938142052087124008> **Payments of this Bot**`)
                     .setDescription(`Ordered by: <@${userid}>`)
-                    .addField("<a:money:939201650395058237> **MONEY** Payment", `${normaldata ? `**Payed at:**\n> \`${moment(normaldata.timestamp).format("DD:MM:YYYY | HH:MM")}\`\n**Payed for:**\n> ${duration(normaldata.time).map(i => `\`${i}\``).join(", ")}\n**Next Payment in:**\n> ${duration(normaldata.time - (Date.now() - normaldata.timestamp)).map(i => `\`${i}\``).join(", ")}` : "<a:crossred:939238440359321600> **`Not payed via this Payment`**"}`)
-                    .addField("<:join:938142051768348693> **INVITE** Payment", `${invitedata ? `**Payed at:**\n> \`${moment(invitedata.timestamp).format("DD:MM:YYYY | HH:MM")}\`\n**Payed for:**\n> ${duration(invitedata.time).map(i => `\`${i}\``).join(", ")}\n**Next Payment in:**\n> ${duration(invitedata.time - (Date.now() - invitedata.timestamp)).map(i => `\`${i}\``).join(", ")}` : "<a:crossred:939238440359321600> **`Not payed via this Payment`**"}`)
-                    .addField("<a:boost_gif:937111627155771413> **BOOST** Payment", `${boostdata ? `**Payed at:**\n> \`${moment(boostdata.timestamp).format("DD:MM:YYYY | HH:MM")}\`\n**Payed for:**\n> ${duration(boostdata.time).map(i => `\`${i}\``).join(", ")}\n**Next Payment in:**\n> ${duration(boostdata.time - (Date.now() - boostdata.timestamp)).map(i => `\`${i}\``).join(", ")}` : "<a:crossred:939238440359321600> **`Not payed via this Payment`**"}`)
+                    .addField("<a:money:939201650395058237> **MONEY** Payment", `${normaldata ? `**Payed at:**\n> \`${moment(normaldata.timestamp).format("DD:MM:YYYY | HH:MM")}\`\n\n**Payed for:**\n> ${duration(normaldata.time).map(i => `\`${i}\``).join(", ")}\n\n**Next Payment in:**\n> ${duration(normaldata.time - (Date.now() - normaldata.timestamp)).map(i => `\`${i}\``).join(", ")}` : "<a:crossred:939238440359321600> **`Not payed via this Payment`**"}`)
+                    .addField("<:join:938142051768348693> **INVITE** Payment", `${invitedata ? `**Payed at:**\n> \`${moment(invitedata.timestamp).format("DD:MM:YYYY | HH:MM")}\`\n\n**Payed for:**\n> ${duration(invitedata.time).map(i => `\`${i}\``).join(", ")}\n\n**Next Payment in:**\n> ${duration(invitedata.time - (Date.now() - invitedata.timestamp)).map(i => `\`${i}\``).join(", ")}` : "<a:crossred:939238440359321600> **`Not payed via this Payment`**"}`)
+                    .addField("<a:nitro:937111333332201543> **BOOST** Payment", `${boostdata ? `**Payed at:**\n> \`${moment(boostdata.timestamp).format("DD:MM:YYYY | HH:MM")}\`\n\n**Payed for:**\n> ${duration(boostdata.time).map(i => `\`${i}\``).join(", ")}\n\n**Next Payment in:**\n> ${duration(boostdata.time - (Date.now() - boostdata.timestamp)).map(i => `\`${i}\``).join(", ")}` : "<a:crossred:939238440359321600> **`Not payed via this Payment`**"}`)
                     .setFooter(`ID: ${bot.id}`, bot.displayAvatarURL())
                 ]
             });
@@ -3099,28 +4034,28 @@ module.exports = async(client) => {
                 }).catch(console.error)).catch(console.error);
             }
             try {
-                if (!args[0]) return message.reply("<a:crossred:939238440359321600> **You forgot to add a VALID TIME!**\nUsage: `,payment 30d <@USER> <@BOT>`");
+                if (!args[0]) return message.reply("<a:crossred:939238440359321600> **You forgot to add a VALID TIME!**\nUsage: `,payment 30d @USER @BOT`");
                 let time = ms(args[0])
-                if (!time || isNaN(time)) return message.reply("<a:crossred:939238440359321600> **You forgot to add a VALID TIME!**\nUsage: `,payment 30d <@USER> <@BOT>`");
+                if (!time || isNaN(time)) return message.reply("<a:crossred:939238440359321600> **You forgot to add a VALID TIME!**\nUsage: `,payment 30d @USER @BOT`");
                 args.shift();
                 let member = message.mentions.members.filter(m => m.guild.id == message.guild.id).first() || await message.guild.members.fetch(args[0])
-                if (!member || !member.user || member.user.bot) return message.reply("<a:crossred:939238440359321600> **You forgot to Ping a MEMBER**\nUsage: `,payment 30d <@USER> <@BOT>`");
+                if (!member || !member.user || member.user.bot) return message.reply("<a:crossred:939238440359321600> **You forgot to Ping a MEMBER**\nUsage: `,payment 30d @USER @BOT`");
                 let user = member.user;
                 args.shift()
                 let bot = message.mentions.members.filter(m => m.guild.id == message.guild.id && m.user.bot).first() || await message.guild.members.fetch(args[0])
-                if (!bot || !bot.user || !bot.user.bot) return message.reply("<a:crossred:939238440359321600> **You forgot to Ping a BOT**\nUsage: `,payment 30d <@USER> <@BOT>`");
+                if (!bot || !bot.user || !bot.user.bot) return message.reply("<a:crossred:939238440359321600> **You forgot to Ping a BOT**\nUsage: `,payment 30d @USER @BOT`");
                 client.bots.ensure(bot.id, {
                     info: "No Info available",
                     type: "Default"
                 })
                 let data = client.bots.get(bot.id, "info");
-                if (!data) return message.reply("<a:crossred:939238440359321600> **The Bot does not have botdetails yet!**\nUsage: `,payment 30d <@USER> <@BOT>`");
+                if (!data) return message.reply("<a:crossred:939238440359321600> **The Bot does not have botdetails yet!**\nUsage: `,payment 30d @USER @BOT`");
                 if (!String(data).endsWith("`")) data += "```";
                 let normaldata = client.payments.get("payments", "users");
                 let invitedata = client.payments.get("invitepayments", "users");
                 let boostdata = client.payments.get("boostpayments", "users");
                 if(normaldata.find(d => d.bot == bot.id) || invitedata.find(d => d.bot == bot.id) || boostdata.find(d => d.bot == bot.id))
-                  return message.reply("<a:crossred:939238440359321600> This bot is already payed! Use: `,removepayment <@Bot>` first!")
+                  return message.reply("<a:crossred:939238440359321600> This bot is already payed! Use: `,removepayment @Bot` first!")
                 client.payments.push("payments", {
                         timestamp: Date.now(),
                         time: time,
@@ -3133,7 +4068,7 @@ module.exports = async(client) => {
                 try {
                     message.delete();
                 } catch {}
-                message.channel.send(`<a:check:939238439826640957> **Successfully Noted this Payment for ${duration(time).map(i => `\`${i}\``).join(" ")} until <t:${Math.floor((Date.now() + time) / 1000)}>, after that I will notify <@${user.id}> to pay for ${bot.user} again!**`);
+                message.channel.send(`✅ **Successfully Noted this Payment for ${duration(time).map(i => `\`${i}\``).join(" ")} until <t:${Math.floor((Date.now() + time) / 1000)}>, after that I will notify <@${user.id}> to pay for ${bot.user} again!**`);
                 client.channels.fetch("939205602574467122").then(ch => {
                     ch.send(`${user} payed for ${duration(time).map(i => `\`${i}\``).join(" ")} until <t:${Math.floor((Date.now() + time) / 1000)}> for: **${client.bots.get(bot.id, "type")}** ${bot}`)
                 })
@@ -3184,7 +4119,7 @@ module.exports = async(client) => {
                 try {
                     message.delete();
                 } catch {}
-                message.channel.send(`<a:check:939238439826640957> **Successfully Noted this INVITEPayment for ${duration(time).map(i => `\`${i}\``).join(" ")} until <t:${Math.floor((Date.now() + time) / 1000)}>, after that I will notify <@${user.id}> to pay for ${bot.user} again!**`);
+                message.channel.send(`✅ **Successfully Noted this INVITEPayment for ${duration(time).map(i => `\`${i}\``).join(" ")} until <t:${Math.floor((Date.now() + time) / 1000)}>, after that I will notify <@${user.id}> to pay for ${bot.user} again!**`);
                 client.channels.fetch("939205602574467122").then(ch => {
                     ch.send(`${user} invite-payed for ${duration(time).map(i => `\`${i}\``).join(" ")} until <t:${Math.floor((Date.now() + time) / 1000)}> for: **${client.bots.get(bot.id, "type")}** ${bot}`)
                 })
@@ -3235,7 +4170,7 @@ module.exports = async(client) => {
                 try {
                     message.delete();
                 } catch {}
-                message.channel.send(`<a:check:939238439826640957> **Successfully Noted this BOOSTPayment for ${duration(time).map(i => `\`${i}\``).join(" ")} until <t:${Math.floor((Date.now() + time) / 1000)}>, after that I will notify <@${user.id}> to pay for ${bot.user} again!**`);
+                message.channel.send(`✅ **Successfully Noted this BOOSTPayment for ${duration(time).map(i => `\`${i}\``).join(" ")} until <t:${Math.floor((Date.now() + time) / 1000)}>, after that I will notify <@${user.id}> to pay for ${bot.user} again!**`);
                 client.channels.fetch("939205602574467122").then(ch => {
                     ch.send(`${user} boost-payed for ${duration(time).map(i => `\`${i}\``).join(" ")} until <t:${Math.floor((Date.now() + time) / 1000)}> for: **${client.bots.get(bot.id, "type")}** ${bot}`)
                 })
@@ -3260,7 +4195,9 @@ module.exports = async(client) => {
         }
     })
 
-
+    /**
+     *  @STAFF_RANKING SYSTEM
+     */
     client.on("messageCreate", message => {
         if (!message.guild || message.author.bot) return;
         let allowedcats = ["938409498371031062", "938439935361433691", "938914282333147257", "938439892638257172", "938439892638257172", "938439991577706610", "938439935361433691", "938462240984674305", "938462240984674305", "938466109923942442", "938466109923942442", "938466151200063540", "938876148765556796", "938502127695831050", "941718876016767047", "940698649518833674"];
@@ -3352,4 +4289,14 @@ function onCoolDown(message, command) {
       setTimeout(() => timestamps.delete(message.member.id), cooldownAmount); 
       return false;
     }
+}
+function formatBytes(bytes, decimals = 3) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }

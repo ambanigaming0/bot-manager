@@ -6,12 +6,12 @@ module.exports = {
     category: "Setup", 
     aliases: [ "savedb" ], 
     description: "", 
-    run: async (client, message) => {
+    run: async (client, message, args, prefix) => {
         if (message.member.permissions.has("ADMINISTRATOR")) {
             theDB(client, message.guild);
             await message.react("<:like:938142052087124008>").catch(() => {});
         } else {
-            message.reply("<a:crossred:939238440359321600> no Valid Permissions")
+            message.reply("<:no:935673265245028382> no Valid Permissions")
         }
     }
 }

@@ -2,15 +2,20 @@
     "token": "",
     "prefix": ",",
     "color": "#6861fe",
-    "pastebinapi": "",
-    
+    "pastebinapi": "sdsd",
+    "secret": "ss", 
+    "callback": "http://localhost/callback", 
+    "paypal": {
+        "clientId": "",
+        "clientSecret": ""
+    },
     "servers": {
-        "234": "supercoolip"
+        "234": ""
     },
     "passwords": {
-        "234": "supercoolpasswort"
+        "234": ""
     },
     "usernames": {
-        "234": "root"
+        "234": ""
     }
 }

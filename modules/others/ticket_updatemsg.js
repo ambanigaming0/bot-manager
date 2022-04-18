@@ -2,12 +2,12 @@ var CronJob = require('cron').CronJob;
 const Discord = require("discord.js");
 module.exports = client => {
 
-  var job3 = new CronJob('*/15 * * * *', function () {
+  var job3 = new CronJob('0 */15 * * * *', function () {
     client.channels.fetch("938509532416606219").then(ch => {
-      ch.messages.fetch("938875412661010435").then(async msg => {
+      ch.messages.fetch("881566678989828126").then(async msg => {
         let allmembers = await msg.guild.members.fetch();
         let onlinesupporters = [
-          ...allmembers.filter(m => !m.user.bot && m.roles.highest.rawPosition >= msg.guild.roles.cache.get("935689526586790028").rawPosition)
+          ...allmembers.filter(m => !m.user.bot && m.roles.highest.rawPosition >= msg.guild.roles.cache.get("935689419757854780").rawPosition)
           .filter(m => m.presence)
           .values()
         ]
@@ -36,7 +36,7 @@ module.exports = client => {
 
       //ORDER MESSAGE
       client.channels.fetch("936392309065523221").then(ch => {
-        ch.messages.fetch("938875412661010435").then(async msg => {
+        ch.messages.fetch("881566678922698802").then(async msg => {
           let allmembers = await msg.guild.members.fetch();
           let onlinesupporters = [
             ...allmembers.filter(m => !m.user.bot && m.roles.highest.rawPosition >= msg.guild.roles.cache.get("935689419757854780").rawPosition)

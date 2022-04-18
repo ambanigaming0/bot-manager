@@ -14,7 +14,7 @@ const settings = require("../../settings.json");
 var CronJob = require('cron').CronJob;
 const moment = require("moment");
 const Roles = {
-FounderId: "934221436564930610",
+    FounderId: "934221436564930610",
     OwnerRoleId: "934221436564930610",
     CoOwnerRoleId: "934227843615961209",
     ChiefHumanResources: "938177396434165770",
@@ -33,8 +33,8 @@ const overflows = [
 ];
 module.exports = client => {
     let TicketChannelID = "936392309065523221";
-    let RecoverChannelId = "938867265326157905";
-    let cooldownamount = 1 * 60 * 1000;
+    let RecoverChannelId = "930087153986326578";
+    let cooldownamount = 2 * 60 * 1000;
     client.ToDeleteChannels = new CronJob('*/30 * * * * *', async function () {
         let channels = client.setups.get("todelete", "tickets");
         let toDeleteChannels = channels.filter(ch => ch.time - (Date.now() - ch.timestamp) <= 0)
@@ -60,19 +60,18 @@ module.exports = client => {
                             userid = client.setups.get(channel.id, "user");
                             client.setups.delete(channel.id);
                         }
-                        
-                        if (!userid && channel.parent && channel.parent.id == "938439892638257172")
-                        userid = client.setups.findKey(user => user.ticketid == channel.id)
                         if (!userid && channel.parent && channel.parent.id == "938418981197451294")
                             userid = client.setups.findKey(user => user.ticketid == channel.id)
-                        if (!userid && channel.parent && channel.parent.id == "938439991577706610")
+                        if (!userid && channel.parent && channel.parent.id == "938439892638257172")
                             userid = client.setups.findKey(user => user.ticketid2 == channel.id)
-                        if (!userid && channel.parent && channel.parent.id == "938462240984674305")
+                        if (!userid && channel.parent && channel.parent.id == "938439991577706610")
                             userid = client.setups.findKey(user => user.ticketid3 == channel.id)
+                        if (!userid && channel.parent && channel.parent.id == "938439935361433691")
+                            userid = client.setups.findKey(user => user.ticketid4 == channel.id)
                         if (!userid && channel.parent && channel.parent.id == "941718876016767047")
-                        userid = client.setups.findKey(user => user.ticketid3 == channel.id)
-                        if (!userid && channel.parent && channel.parent.id == "945014350022844496")
-                        
+                            userid = client.setups.findKey(user => user.ticketid5 == channel.id)
+                        if (!userid && channel.parent && channel.parent.id == "941718876016767047")
+                            userid = client.setups.findKey(user => user.ticketid6 == channel.id)
                         
                         if(userid.length < 5) {
                             userid = client.setups.findKey(user => user.ticketid == channel.id 
@@ -96,11 +95,17 @@ module.exports = client => {
                     })
 
 
-                    let parent1 = channel.guild.channels.cache.get("938874521476292629");
-                    let parent2 = channel.guild.channels.cache.get("938874561338961940")
-                    if(parent1 && parent1.size > 50 && parent2 && parent2.size > 50){
-                        channel.delete().catch(console.warn);
-                    }
+                    let parent1 = message.guild.channels.cache.get("840364696665849887");
+                    let parent2 = message.guild.channels.cache.get("871341354888867900")
+                    let parent3 = message.guild.channels.cache.get("936932374833405972")
+                    let parent4 = message.guild.channels.cache.get("936932341367062528")
+                    let parent5 = message.guild.channels.cache.get("936932306541764638")
+                    if( (parent1 && parent1.type == "GUILD_CATEGORY" && parent1.children.size > 50) && 
+                        (parent2 && parent2.type == "GUILD_CATEGORY" && parent2.children.size > 50) && 
+                        (parent3 && parent3.type == "GUILD_CATEGORY" && parent3.children.size > 50) && 
+                        (parent4 && parent4.type == "GUILD_CATEGORY" && parent4.children.size > 50) && 
+                        (parent5 && parent5.type == "GUILD_CATEGORY" && parent5.children.size > 50)
+                    ) channel.delete().catch(console.warn);
 
 
                     let ticketdata = client.ticketdata.get(channel.id, "supporters")
@@ -173,14 +178,18 @@ module.exports = client => {
                                     try {
                                         await client.users.fetch(userid).then(async user => {
                                             try {
-                                                if (channel.parent && channel.parent.id == "938439991577706610")
+                                                if (channel.parent && channel.parent.id == "938418981197451294")
                                                     client.setups.remove("TICKETS", user.id, "tickets");
                                                 if (channel.parent && channel.parent.id == "938439892638257172")
                                                     client.setups.remove("TICKETS", user.id, "tickets2");
-                                                if (channel.parent && channel.parent.id == "938418981197451294")
+                                                if (channel.parent && channel.parent.id == "938439991577706610")
                                                     client.setups.remove("TICKETS", user.id, "tickets3");
-                                                if (channel.parent && channel.parent.id == "938462240984674305")
+                                                if (channel.parent && channel.parent.id == "938439935361433691")
                                                     client.setups.remove("TICKETS", user.id, "tickets4");
+                                                if (channel.parent && channel.parent.id == "941718876016767047")
+                                                    client.setups.remove("TICKETS", user.id, "tickets5");
+                                                if (channel.parent && channel.parent.id == "941718876016767047")
+                                                    client.setups.remove("TICKETS", user.id, "tickets6");
                                             } catch (e) {
                                                 console.log(e.stack ? String(e.stack).grey : String(e).grey)
                                             }
@@ -218,11 +227,17 @@ module.exports = client => {
                             .addField(`♨️ TYPE:`, `${channel.parent ? channel.parent.name : "UNKOWN"}`)
                         ]
                     }).catch(console.log)
-                    if(parent1 && parent1.children.size < 50) {
+                    
+                    if(parent1 && parent1.type == "GUILD_CATEGORY" && parent1.children.size < 50) {
                         await channel.setParent(parent1.id, {lockPermissions:false}).catch(()=>{});
-                    } else {
-                        console.log("PARENT 1 is full, using next parent")
+                    } else if(parent2 && parent2.type == "GUILD_CATEGORY" && parent2.children.size < 50) {
                         await channel.setParent(parent2.id, {lockPermissions:false}).catch(()=>{});
+                    } else if(parent3 && parent3.type == "GUILD_CATEGORY" && parent3.children.size < 50) {
+                        await channel.setParent(parent3.id, {lockPermissions:false}).catch(()=>{});
+                    } else if(parent4 && parent4.type == "GUILD_CATEGORY" && parent4.children.size < 50) {
+                        await channel.setParent(parent4.id, {lockPermissions:false}).catch(()=>{});
+                    } else if(parent5 && parent5.type == "GUILD_CATEGORY" && parent5.children.size < 50) {
+                        await channel.setParent(parent5.id, {lockPermissions:false}).catch(()=>{});
                     }
                     await channel.permissionOverwrites.set([
                         {id: channel.guild.id, deny: [Discord.Permissions.FLAGS.VIEW_CHANNEL,Discord.Permissions.FLAGS.SEND_MESSAGES,Discord.Permissions.FLAGS.VIEW_CHANNEL]}
@@ -243,7 +258,7 @@ module.exports = client => {
         let Guild = client.guilds.cache.get("934213686468423780")
         let channel = Guild.channels.cache.get(interaction.channelId) || await Guild.channels.fetch(interaction.channelId).catch(() => {}) || false;
         if(interaction.customId == "closeticket"){
-            interaction.reply({content: "<a:check:939238439826640957> **Now Closing the Ticket!**\n> Don't forget to leave <#937678247011954738> and a review on our <https://de.trustpilot.com/review/kooje.eu>", ephemeral: true}).catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});
+            interaction.reply({content: "<a:check:939238439826640957> **Now Closing the Ticket!**\n> Don't forget to leave <#937678247011954738> and a review on our <https://de.trustpilot.com/review/kooje.me>", ephemeral: true}).catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});
             setTimeout(async() => {
                 if(channel) {
                     let userid = false;
@@ -251,15 +266,18 @@ module.exports = client => {
                         if(client.setups.has(channel.id)) {
                             userid = client.setups.get(channel.id, "user");
                         }
+                        
+                        if (!userid && channel.parent && channel.parent.id == "938439892638257172")
+                        userid = client.setups.findKey(user => user.ticketid == channel.id)
                         if (!userid && channel.parent && channel.parent.id == "938418981197451294")
                             userid = client.setups.findKey(user => user.ticketid == channel.id)
-                        if (!userid && channel.parent && channel.parent.id == "938439892638257172")
-                            userid = client.setups.findKey(user => user.ticketid2 == channel.id)
                         if (!userid && channel.parent && channel.parent.id == "938439991577706610")
-                            userid = client.setups.findKey(user => user.ticketid3 == channel.id)
+                            userid = client.setups.findKey(user => user.ticketid2 == channel.id)
                         if (!userid && channel.parent && channel.parent.id == "938462240984674305")
-                            userid = client.setups.findKey(user => user.ticketid4 == channel.id)
-
+                            userid = client.setups.findKey(user => user.ticketid3 == channel.id)
+                        if (!userid && channel.parent && channel.parent.id == "941718876016767047")
+                        userid = client.setups.findKey(user => user.ticketid3 == channel.id)
+                        if (!userid && channel.parent && channel.parent.id == "945014350022844496")
                         
                         if(userid.length < 5) {
                             userid = client.setups.findKey(user => user.ticketid == channel.id 
@@ -361,21 +379,20 @@ module.exports = client => {
                                     try {
                                         await client.users.fetch(userid).then(async user => {
                                             try {
-                                                if (channel.parent && channel.parent.id == "938418981197451294")
+                                                if (channel.parent && channel.parent.id == "938439991577706610")
                                                     client.setups.remove("TICKETS", user.id, "tickets");
                                                 if (channel.parent && channel.parent.id == "938439892638257172")
                                                     client.setups.remove("TICKETS", user.id, "tickets2");
-                                                if (channel.parent && channel.parent.id == "938439991577706610")
+                                                if (channel.parent && channel.parent.id == "938418981197451294")
                                                     client.setups.remove("TICKETS", user.id, "tickets3");
                                                 if (channel.parent && channel.parent.id == "938462240984674305")
                                                     client.setups.remove("TICKETS", user.id, "tickets4");
-                                               
                                             } catch (e) {
                                                 console.log(e.stack ? String(e.stack).grey : String(e).grey)
                                             }
                                             await user.send({
                                                 embeds: [new Discord.MessageEmbed()
-                                                    .setColor("#6861fe")
+                                                    .setColor("RED")
                                                     .setTitle(`\`${channel.name}\``)
                                                     .addField(`🔒 CLOSED BY:`, `${client.user.tag} | <@${client.user.id}>`)
                                                     .setFooter(client.user.tag + " | ID: " + client.user.id+"\nTicketLog is attached to the Message!", client.user.displayAvatarURL({
@@ -401,7 +418,7 @@ module.exports = client => {
                     }
                     await channel.send({
                         embeds: [new Discord.MessageEmbed()
-                            .setColor("#6861fe")
+                            .setColor("RED")
                             .setTitle(`\`${channel.name}\``)
                             .addField(`🔒 CLOSED BY:`, `${client.user.tag} | <@${client.user.id}>`)
                             .addField(`♨️ TYPE:`, `${channel.parent ? channel.parent.name : "UNKOWN"}`)
@@ -434,37 +451,37 @@ module.exports = client => {
             if(!member) member = guild.members.cache.get(interaction.user);
             if(!member) member = await guild.members.fetch(interaction.user);
             if (member.roles.highest.rawPosition >= guild.roles.cache.get(Roles.NewSupporterRoleId).rawPosition) {
-                if(channel.name.slice(0, 5).includes("👑") && member.roles.highest.rawPosition <= guild.roles.cache.get(Roles.FounderId).rawPosition - 1) {
-                    return interaction.reply({ephemeral: true, content: "<a:crossred:939238440359321600> **You are not allowed to claim, due to the fact its a Protyo TICKET**"});
+                if(channel.name.slice(0, 5).includes("💎") && member.roles.highest.rawPosition <= guild.roles.cache.get(Roles.FounderId).rawPosition - 1) {
+                    return interaction.reply({ephemeral: true, content: ":x: **You are not allowed to claim, due to the fact its a PROTYO TICKET**"});
                 }
-                if(channel.name.slice(0, 5).includes("💎") && member.roles.highest.rawPosition <= guild.roles.cache.get(Roles.CoOwnerRoleId).rawPosition - 1) {
-                    return interaction.reply({ephemeral: true, content: "<a:crossred:939238440359321600> **You are not allowed to claim, due to the fact its a Co-Owner+ Ticket**"});
+                if(channel.name.slice(0, 5).includes("👑") && member.roles.highest.rawPosition <= guild.roles.cache.get(Roles.CoOwnerRoleId).rawPosition - 1) {
+                    return interaction.reply({ephemeral: true, content: ":x: **You are not allowed to claim, due to the fact its a Co-Owner+ Ticket**"});
                 }
                 if(channel.name.slice(0, 5).includes("💠") && member.roles.highest.rawPosition <= guild.roles.cache.get(Roles.ModRoleId).rawPosition - 1) {
-                    return interaction.reply({ephemeral: true, content: "<a:crossred:939238440359321600> **You are not allowed to claim, due to the fact its a Mod+ Ticket**"});
+                    return interaction.reply({ephemeral: true, content: ":x: **You are not allowed to claim, due to the fact its a Mod+ Ticket**"});
                 }
                 if(channel.name.slice(0, 5).includes("❗") && member.roles.highest.rawPosition <= guild.roles.cache.get(Roles.ModRoleId).rawPosition - 1) {
-                    return interaction.reply({ephemeral: true, content: "<a:crossred:939238440359321600> **You are not allowed to claim, due to the fact its a Important (Mod+) Ticket**"});
+                    return interaction.reply({ephemeral: true, content: ":x: **You are not allowed to claim, due to the fact its a Important (Mod+) Ticket**"});
                 }
                 if(!channel.permissionsFor(member).has(Discord.Permissions.FLAGS.SEND_MESSAGES)){
                     channel.permissionOverwrites.edit(member.user, {
                         SEND_MESSAGES: true
                     }).catch(e=>{
-                        return interaction.reply({ephemeral: true, content: "<a:crossred:939238440359321600> **Can't change the Permissions of you!**"});
+                        return interaction.reply({ephemeral: true, content: ":x: **Can't change the Permissions of you!**"});
                     });
                 }
                 interaction.update({content: message.content, embeds: [message.embeds[0]], components: message.components}).catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});
                 channel.send({
                     embeds: [
                         new MessageEmbed()
-                            .setColor("GREEN")
+                            .setColor("#57F287")
                             .setAuthor(member.user.tag, member.displayAvatarURL({dynamic: true}))
                             .setDescription(`**Ticket Claimed by:** ${member.user}`)
                             .setTimestamp()
                     ]
                 }).catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});
             } else {
-                interaction.reply({ephemeral: true, content: "<a:crossred:939238440359321600> **You are not a Staff Member and Can't Claim the Ticket!**"});
+                interaction.reply({ephemeral: true, content: ":x: **You are not a Staff Member and Can't Claim the Ticket!**"});
             }
         }
     })
@@ -477,7 +494,7 @@ module.exports = client => {
             let guild = interaction.message.guild;
             if(menuIndex.type){
                 if(Cooldown.has(user.id)){
-                    return interaction.reply({content: `<a:crossred:939238440359321600> **Sorry, but you can create an Order in \`${duration(cooldownamount - (Date.now() - Cooldown.get(user.id))).join(", ")}\` again!**`, ephemeral: true}).catch((e)=>{console.warn(e.stack ? String(e.stack).grey : String(e).grey)})
+                    return interaction.reply({content: `:x: **Sorry, but you can create an Order in \`${duration(cooldownamount - (Date.now() - Cooldown.get(user.id))).join(", ")}\` again!**`, ephemeral: true}).catch((e)=>{console.warn(e.stack ? String(e.stack).grey : String(e).grey)})
                 }
                 switch(menuIndex.type){
                     case "SYSTEMBOTS" : {
@@ -488,7 +505,7 @@ module.exports = client => {
                         setTimeout(()=>Cooldown.delete(user.id), cooldownamount);
                         
                         let ticket = client.setups.get(guild.id, "ticketsystem3");
-                        if (!ticket.enabled) return interaction.editReply("<a:crossred:939238440359321600> **Sorry but we are currently not providing __System Bots__!**").catch(e => console.warn(e.stack ? String(e.stack).grey : String(e).grey));
+                        if (!ticket.enabled) return interaction.editReply(":x: **Sorry but we are currently not providing __Clan Bots__!**").catch(e => console.warn(e.stack ? String(e.stack).grey : String(e).grey));
                         var stopped = false;
                         if (client.setups.get("TICKETS", "tickets3").includes(user.id)) {
                             try{
@@ -498,14 +515,14 @@ module.exports = client => {
                             }
                             else{
                                 stopped = true;
-                                return interaction.editReply("<a:crossred:939238440359321600> **You already have an opened System-Bot-Order-Ticket!!** <#" + client.setups.get(user.id, "ticketid3") + ">").catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});
+                                return interaction.editReply(":x: **You already have an opened System-Bot-Order-Ticket!!** <#" + client.setups.get(user.id, "ticketid3") + ">").catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});
                             }
                             }catch{
 
                             }
                         }
                         if(stopped) return;
-                        let channelname = `⍿🔩᚛s・`;
+                        let channelname = `🤖│s・`;
                         client.setups.set("COUNTER", 1 + Number(client.setups.get("COUNTER", "number")), "number")
                         var cc = client.setups.get("COUNTER", "number")
                         channelname += String(cc) + `-${user.username}`.replace(/[&\/\\#!,+()$~%.'":*?<>{}]/g,'')
@@ -513,10 +530,10 @@ module.exports = client => {
                         
                         let parentId = ticket.parentid;
                         const parentChannel = guild.channels.cache.get(parentId) || await guild.channels.fetch(parentId).catch(()=> {});
-                        if(!parentChannel) return interaction.reply({ content: "<a:crossred:939238440359321600> Could not find ticket parent", ephemeral: true })
+                        if(!parentChannel) return interaction.reply({ content: ":x: Could not find ticket parent", ephemeral: true })
                         
                         const overflowParents = overflows.map(pId => guild.channels.cache.get(pId)).filter(Boolean);
-                        if(parentChannel.children.size >= 50 && !overflowParents.some(c => c.children.size < 50)) return interaction.reply({ content: "<a:crossred:939238440359321600> Sorry we do not have enough ticket space for your Ticket, please come back later again!", ephemeral: true })
+                        if(parentChannel.children.size >= 50 && !overflowParents.some(c => c.children.size < 50)) return interaction.reply({ content: ":x: Sorry we do not have enough ticket space for your Ticket, please come back later again!", ephemeral: true })
                         if(parentChannel.children.size >= 50) { parentId = overflowParents.find(c => c.children.size < 50); }
 
                         guild.channels.create(channelname.substring(0, 32), {
@@ -552,10 +569,10 @@ module.exports = client => {
                                 new MessageEmbed().setColor("#6861fe")
                                     .setTitle("Thanks for Ordering a System Bot! Send the Parameters!")
                                     .setDescription(ticket.message.replace("{user}", `${user}`)),
-                                new MessageEmbed().setColor("YELLOW").setTitle("<a:loading:938899148927827979> A Staff Member will claim the Ticket soon!").setDescription(`**Dear ${user}!**\n> This Ticket will be claimed by a Staff Member as soon as possible!\n\n> *He/She/They will help you then!*\n\n> **Meanwhile, make sure to list us all Information needed!**`).setFooter("Thanks for choosing KooJe Development✌️", "https://cdn.discordapp.com/attachments/936985190016897055/938911526683811860/LOGOTRANSPARENT.png")],
+                                new MessageEmbed().setColor("YELLOW").setTitle("<a:loading:938899148927827979> A Staff Member will claim the Ticket soon!").setDescription(`**Dear ${user}!**\n> This Ticket will be claimed by a Staff Member as soon as possible!\n\n> *He/She/They will help you then!*\n\n> **Meanwhile, make sure to list us all Information needed!**`).setFooter("Thanks for choosing KooJe Development ✌️", "https://cdn.discordapp.com/attachments/936985190016897055/938911526683811860/LOGOTRANSPARENT.png")],
                             components: [
                                 new MessageActionRow().addComponents([
-                                    new MessageButton().setStyle("SUCCESS").setLabel("Claim the Ticket").setEmoji("<:koojedevelopment:937113253945933834>").setCustomId("TicketClaim")
+                                    new MessageButton().setStyle("PRIMARY").setLabel("Claim").setEmoji("📝").setCustomId("TicketClaim")
                                 ])
                             ]}).catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)}).then(msg => {
                                 if(interaction.message.channel.id == RecoverChannelId) msg.reply("<:Approved:866085733189025834> **This is a REFUND ORDER**").catch(() => {});
@@ -569,14 +586,14 @@ module.exports = client => {
                         }).catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});
                     } break;
                     case "MusicBots" : {
-                        await interaction.reply({content: `:notes: Creating your Ticket ... `, ephemeral: true}).catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});
+                        await interaction.reply({content: `Creating your Ticket ... `, ephemeral: true}).catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});
                         ////////////////////////
                         /////////////////////////
                         Cooldown.set(user.id, Date.now())
                         setTimeout(()=>Cooldown.delete(user.id), cooldownamount);
                         
                         let ticket = client.setups.get(guild.id, "ticketsystem2");
-                        if (!ticket.enabled) return interaction.editReply("<a:crossred:939238440359321600> **Sorry but we are currently not providing __Music Bots__!**").catch(e => console.warn(e.stack ? String(e.stack).grey : String(e).grey));
+                        if (!ticket.enabled) return interaction.editReply(":x: **Sorry but we are currently not providing __Music Bots__!**").catch(e => console.warn(e.stack ? String(e.stack).grey : String(e).grey));
                         var stopped = false;
                         if (client.setups.get("TICKETS", "tickets2").includes(user.id)) {
                             try{
@@ -586,14 +603,14 @@ module.exports = client => {
                            }
                             else{
                                stopped = true;
-                                return interaction.editReply("<a:crossred:939238440359321600> **You already have an opened Music-Bot-Order-Ticket!** <#" + client.setups.get(user.id, "ticketid2") + ">").catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});
+                                return interaction.editReply(":x: **You already have an opened Music-Bot-Order-Ticket!** <#" + client.setups.get(user.id, "ticketid2") + ">").catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});
                             }
                             }catch{
 
                             }
                         }
                         if(stopped) return;
-                        let channelname = `⍿🎵᚛m・`;
+                        let channelname = `🎵│m・`;
                         client.setups.set("COUNTER", 1 + Number(client.setups.get("COUNTER", "number")), "number")
                         var cc = client.setups.get("COUNTER", "number")
                         channelname += String(cc) + `-${user.username}`.replace(/[&\/\\#!,+()$~%.'":*?<>{}]/g,'')
@@ -601,10 +618,10 @@ module.exports = client => {
                         
                         let parentId = ticket.parentid;
                         const parentChannel = guild.channels.cache.get(parentId) || await guild.channels.fetch(parentId).catch(()=> {});
-                        if(!parentChannel) return interaction.reply({ content: "<a:crossred:939238440359321600> Could not find ticket parent", ephemeral: true })
+                        if(!parentChannel) return interaction.reply({ content: ":x: Could not find ticket parent", ephemeral: true })
                         
                         const overflowParents = overflows.map(pId => guild.channels.cache.get(pId)).filter(Boolean);
-                        if(parentChannel.children.size >= 50 && !overflowParents.some(c => c.children.size < 50)) return interaction.reply({ content: "<a:crossred:939238440359321600> Sorry we do not have enough ticket space for your Ticket, please come back later again!", ephemeral: true })
+                        if(parentChannel.children.size >= 50 && !overflowParents.some(c => c.children.size < 50)) return interaction.reply({ content: ":x: Sorry we do not have enough ticket space for your Ticket, please come back later again!", ephemeral: true })
                         if(parentChannel.children.size >= 50) { parentId = overflowParents.find(c => c.children.size < 50); }
 
                         guild.channels.create(channelname.substring(0, 32), {
@@ -637,10 +654,10 @@ module.exports = client => {
                             client.setups.set(user.id, ch.id, "ticketid2");
                             ch.send({content: `<@${user.id}> <:arrow:936667980237000834> ${ticket.adminroles.map(r => `<@&${r}>`).join(" | ")} <:arrowl:938884347166064700>`, embeds: [new MessageEmbed().setColor("#6861fe")
                             .setTitle(":notes: Thanks for Ordering a Music Bot! Send the Parameters!")
-                            .setDescription(ticket.message.replace("{user}", `${user}`)),                                new MessageEmbed().setColor("YELLOW").setTitle("<a:loading:938899148927827979> A Staff Member will claim the Ticket soon!").setDescription(`**Dear ${user}!**\n> This Ticket will be claimed by a Staff Member as soon as possible!\n\n> *He/She/They will help you then!*\n\n> **Meanwhile, make sure to list us all Information needed!**`).setFooter("Thanks for choosing KooJe Development✌️", "https://cdn.discordapp.com/attachments/936985190016897055/938911526683811860/LOGOTRANSPARENT.png")],
+                            .setDescription(ticket.message.replace("{user}", `${user}`)),                                new MessageEmbed().setColor("YELLOW").setTitle("<a:loading:938899148927827979> A Staff Member will claim the Ticket soon!").setDescription(`**Dear ${user}!**\n> This Ticket will be claimed by a Staff Member as soon as possible!\n\n> *He/She/They will help you then!*\n\n> **Meanwhile, make sure to list us all Information needed!**`).setFooter("Thanks for choosing KooJe Development ✌️", "https://cdn.discordapp.com/attachments/936985190016897055/938911526683811860/LOGOTRANSPARENT.png")],
                             components: [
                                 new MessageActionRow().addComponents([
-                                    new MessageButton().setStyle("SUCCESS").setLabel("Claim the Ticket").setEmoji("<:koojedevelopment:937113253945933834>").setCustomId("TicketClaim")
+                                    new MessageButton().setStyle("PRIMARY").setLabel("Claim").setEmoji("📝").setCustomId("TicketClaim")
                                 ])
                             ]}).catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)}).then(msg => {
                                 if(interaction.message.channel.id == RecoverChannelId) msg.reply("<:Approved:866085733189025834> **This is a REFUND ORDER**").catch(() => {});
@@ -654,14 +671,14 @@ module.exports = client => {
                         })
                     } break;
                     case "RYTHMCLONE" : {
-                        await interaction.reply({content: `<:Kooje_X_Rythm:840354002747260960> Creating your Ticket ... `, ephemeral: true}).catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});
+                        await interaction.reply({content: `Creating your Ticket ... `, ephemeral: true}).catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});
                         ////////////////////////
                         /////////////////////////
                         Cooldown.set(user.id, Date.now())
                         setTimeout(()=>Cooldown.delete(user.id), cooldownamount);
                         
                         let ticket = client.setups.get(guild.id, "ticketsystem6");
-                        if (!ticket.enabled) return interaction.editReply("<a:crossred:939238440359321600> **Sorry but we are currently not providing __RYTHM CLONE Bots__!**").catch(e => console.warn(e.stack ? String(e.stack).grey : String(e).grey));
+                        if (!ticket.enabled) return interaction.editReply(":x: **Sorry but we are currently not providing __RYTHM CLONE Bots__!**").catch(e => console.warn(e.stack ? String(e.stack).grey : String(e).grey));
                         var stopped = false;
                         if (client.setups.get("TICKETS", "tickets6").includes(user.id)) {
                             try{
@@ -671,20 +688,20 @@ module.exports = client => {
                             }
                             else{
                                 stopped = true;
-                                return interaction.editReply("<a:crossred:939238440359321600> **You already have an opened Rythm-Clone-Order-Ticket!** <#" + client.setups.get(user.id, "ticketid6") + ">").catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});
+                                return interaction.editReply(":x: **You already have an opened Rythm-Clone-Order-Ticket!** <#" + client.setups.get(user.id, "ticketid6") + ">").catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});
                             }
                             }catch{
 
                             }
                         }
                         if(stopped) return;
-                        let channelname = `⍿🔉᚛r・`;
+                        let channelname = `⍿🔉│r・`;
                         client.setups.set("COUNTER", 1 + Number(client.setups.get("COUNTER", "number")), "number")
                         var cc = client.setups.get("COUNTER", "number")
                         channelname += String(cc) + `-${user.username}`.replace(/[&\/\\#!,+()$~%.'":*?<>{}]/g,'')
                         
                         guild.channels.create(channelname.substring(0, 32), {
-                            parent: "840332200032469024",
+                            parent: "941718876016767047",
                             topic: `ticket-${user.id}`
                         }).then(ch => {
                             ch.permissionOverwrites.edit(guild.roles.everyone, { //disabling all roles
@@ -712,32 +729,32 @@ module.exports = client => {
                             client.setups.set(ch.id, user.id, "user");
                             client.setups.set(user.id, ch.id, "ticketid6");
                             ch.send({content: `<@${user.id}> <:arrow:936667980237000834> ${ticket.adminroles.map(r => `<@&${r}>`).join(" | ")} <:arrowl:938884347166064700>`, embeds: [new MessageEmbed().setColor("#6861fe")
-                            .setTitle("<:Kooje_X_Rythm:840354002747260960> Thanks for Ordering a Rythm Clone! Send the Parameters!")
-                            .setDescription(ticket.message.replace("{user}", `${user}`)),                                new MessageEmbed().setColor("YELLOW").setTitle("<a:loading:938899148927827979> A Staff Member will claim the Ticket soon!").setDescription(`**Dear ${user}!**\n> This Ticket will be claimed by a Staff Member as soon as possible!\n\n> *He/She/They will help you then!*\n\n> **Meanwhile, make sure to list us all Information needed!**`).setFooter("Thanks for choosing KooJe Development✌️", "https://cdn.discordapp.com/attachments/936985190016897055/938911526683811860/LOGOTRANSPARENT.png")],
+                            .setTitle("Thanks for Ordering a Rythm Clone! Send the Parameters!")
+                            .setDescription(ticket.message.replace("{user}", `${user}`)),                                new MessageEmbed().setColor("YELLOW").setTitle("<a:loading:938899148927827979> A Staff Member will claim the Ticket soon!").setDescription(`**Dear ${user}!**\n> This Ticket will be claimed by a Staff Member as soon as possible!\n\n> *He/She/They will help you then!*\n\n> **Meanwhile, make sure to list us all Information needed!**`).setFooter("Thanks for choosing KooJe Development ✌️", "https://cdn.discordapp.com/attachments/936985190016897055/938911526683811860/LOGOTRANSPARENT.png")],
                             components: [
                                 new MessageActionRow().addComponents([
-                                    new MessageButton().setStyle("SUCCESS").setLabel("Claim the Ticket").setEmoji("<:koojedevelopment:937113253945933834>").setCustomId("TicketClaim")
+                                    new MessageButton().setStyle("PRIMARY").setLabel("Claim").setEmoji("📝").setCustomId("TicketClaim")
                                 ])
                             ]}).catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)}).then(msg => {
                                 if(interaction.message.channel.id == RecoverChannelId) msg.reply("<:Approved:866085733189025834> **This is a REFUND ORDER**").catch(() => {});
                             })
                             interaction.editReply({content: `<#${ch.id}>`, embeds: [new MessageEmbed()
                                 .setColor("#6861fe")
-                                .setTitle(`<:Kooje_X_Rythm:840354002747260960> Your Rythm Clone Order \`${ch.name}\` has been created!`)
+                                .setTitle(`Your Rythm Clone Order \`${ch.name}\` has been created!`)
                                 .addField("💢 ATTENTION", `> *Please make sure, to fill out the Information the Bot sent you in the CHANNEL*`)
                                 .addField("💬 The Channel:",`<#${ch.id}>`)], ephemeral: true}).then(msg=>{
                             }).catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});            
                         }).catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});
                     }break;
                     case "WAITINGROOMBOT" : {
-                        await interaction.reply({content: `🕐 Creating your Ticket ... `, ephemeral: true}).catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});
+                        await interaction.reply({content: `<:Public_Waitingroom:867718814015684618> Creating your Ticket ... `, ephemeral: true}).catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});
                         ////////////////////////
                         /////////////////////////
                         Cooldown.set(user.id, Date.now())
                         setTimeout(()=>Cooldown.delete(user.id), cooldownamount);
                         
                         let ticket = client.setups.get(guild.id, "ticketsystem");
-                        if (!ticket.enabled) return interaction.editReply("<a:crossred:939238440359321600> **Sorry but we are currently not providing __WAITINGROOM Bots__!**").catch(e => console.warn(e.stack ? String(e.stack).grey : String(e).grey));
+                        if (!ticket.enabled) return interaction.editReply(":x: **Sorry but we are currently not providing __WAITINGROOM Bots__!**").catch(e => console.warn(e.stack ? String(e.stack).grey : String(e).grey));
                         var stopped = false;
                         if (client.setups.get("TICKETS", "tickets6").includes(user.id)) {
                             try{
@@ -747,14 +764,14 @@ module.exports = client => {
                             }
                             else{
                                 stopped = true;
-                                return interaction.editReply("<a:crossred:939238440359321600> **You already have an opened Waitingroom-Bot-Order-Ticket!** <#" + client.setups.get(user.id, "ticketid") + ">").catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});
+                                return interaction.editReply(":x: **You already have an opened Waitingroom-Bot-Order-Ticket!** <#" + client.setups.get(user.id, "ticketid") + ">").catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});
                             }
                             }catch{
 
                             }
                         }
                         if(stopped) return;
-                        let channelname = `⍿🕐᚛w・`;
+                        let channelname = `🕐│w・`;
                         client.setups.set("COUNTER", 1 + Number(client.setups.get("COUNTER", "number")), "number")
                         var cc = client.setups.get("COUNTER", "number")
                         channelname += String(cc) + `-${user.username}`.replace(/[&\/\\#!,+()$~%.'":*?<>{}]/g,'')
@@ -762,10 +779,10 @@ module.exports = client => {
                         
                         let parentId = ticket.parentid;
                         const parentChannel = guild.channels.cache.get(parentId) || await guild.channels.fetch(parentId).catch(()=> {});
-                        if(!parentChannel) return interaction.reply({ content: "<a:crossred:939238440359321600> Could not find ticket parent", ephemeral: true })
+                        if(!parentChannel) return interaction.reply({ content: ":x: Could not find ticket parent", ephemeral: true })
                         
                         const overflowParents = overflows.map(pId => guild.channels.cache.get(pId)).filter(Boolean);
-                        if(parentChannel.children.size >= 50 && !overflowParents.some(c => c.children.size < 50)) return interaction.reply({ content: "<a:crossred:939238440359321600> Sorry we do not have enough ticket space for your Ticket, please come back later again!", ephemeral: true })
+                        if(parentChannel.children.size >= 50 && !overflowParents.some(c => c.children.size < 50)) return interaction.reply({ content: ":x: Sorry we do not have enough ticket space for your Ticket, please come back later again!", ephemeral: true })
                         if(parentChannel.children.size >= 50) { parentId = overflowParents.find(c => c.children.size < 50); }
 
                         guild.channels.create(channelname.substring(0, 32), {
@@ -797,22 +814,107 @@ module.exports = client => {
                             client.setups.set(ch.id, user.id, "user");
                             client.setups.set(user.id, ch.id, "ticketid");
                             ch.send({content: `<@${user.id}> <:arrow:936667980237000834> ${ticket.adminroles.map(r => `<@&${r}>`).join(" | ")} <:arrowl:938884347166064700>`, embeds: [new MessageEmbed().setColor("#6861fe")
-                            .setTitle("🕐 Thanks for Ordering a Waitingroom Bot! Send the Parameters!")
-                            .setDescription(ticket.message.replace("{user}", `${user}`)),                                new MessageEmbed().setColor("YELLOW").setTitle("<a:loading:938899148927827979> A Staff Member will claim the Ticket soon!").setDescription(`**Dear ${user}!**\n> This Ticket will be claimed by a Staff Member as soon as possible!\n\n> *He/She/They will help you then!*\n\n> **Meanwhile, make sure to list us all Information needed!**`).setFooter("Thanks for choosing KooJe Development✌️", "https://cdn.discordapp.com/attachments/936985190016897055/938911526683811860/LOGOTRANSPARENT.png")],
+                            .setTitle("<:Public_Waitingroom:867718814015684618> Thanks for Ordering a Waitingroom Bot! Send the Parameters!")
+                            .setDescription(ticket.message.replace("{user}", `${user}`)),                                new MessageEmbed().setColor("YELLOW").setTitle("<a:loading:938899148927827979> A Staff Member will claim the Ticket soon!").setDescription(`**Dear ${user}!**\n> This Ticket will be claimed by a Staff Member as soon as possible!\n\n> *He/She/They will help you then!*\n\n> **Meanwhile, make sure to list us all Information needed!**`).setFooter("Thanks for choosing KooJe Development ✌️", "https://cdn.discordapp.com/attachments/936985190016897055/938911526683811860/LOGOTRANSPARENT.png")],
                             components: [
                                 new MessageActionRow().addComponents([
-                                    new MessageButton().setStyle("SUCCESS").setLabel("Claim the Ticket").setEmoji("<:koojedevelopment:937113253945933834>").setCustomId("TicketClaim")
+                                    new MessageButton().setStyle("PRIMARY").setLabel("Claim").setEmoji("📝").setCustomId("TicketClaim")
                                 ])
                             ]}).catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)}).then(msg => {
                                 if(interaction.message.channel.id == RecoverChannelId) msg.reply("<:Approved:866085733189025834> **This is a REFUND ORDER**").catch(() => {});
                             })
                             interaction.editReply({content: `<#${ch.id}>`, embeds: [new MessageEmbed()
                                 .setColor("#6861fe")
-                                .setTitle(`🕐 Your Waitingroom Bot Order \`${ch.name}\` has been created!`)
+                                .setTitle(`<:Public_Waitingroom:867718814015684618> Your Waitingroom Bot Order \`${ch.name}\` has been created!`)
                                 .addField("💢 ATTENTION", `> *Please make sure, to fill out the Information the Bot sent you in the CHANNEL*`)
                                 .addField("💬 The Channel:",`<#${ch.id}>`)], ephemeral: true}).then(msg=>{
                             }).catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});            
                         }).catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});
+                    }break;
+                    case "ADMINISTRATIONBOT" : {
+                        await interaction.reply({content: `🚫 Creating your Ticket ... `, ephemeral: true})
+                        ////////////////////////
+                        /////////////////////////
+                        Cooldown.set(user.id, Date.now())
+                        setTimeout(()=>Cooldown.delete(user.id), cooldownamount);
+                        
+                        let ticket = client.setups.get(guild.id, "ticketsystem5");
+                        if (!ticket.enabled) return interaction.editReply(":x: **Sorry but we are currently not providing __ADMINISTRATION Bots__!**").catch(e => console.warn(e.stack ? String(e.stack).grey : String(e).grey));
+                        var stopped = false;
+                        if (client.setups.get("TICKETS", "tickets5").includes(user.id)) {
+                            try{
+                            let ch = guild.channels.cache.get(client.setups.get(user.id, "ticketid5"));
+                            if(!ch || ch == null || !ch.id || ch.id == null || ["938874521476292629", "938874561338961940"].includes(ch.parentId)){
+                                client.setups.remove("TICKETS", user.id, "tickets5")
+                            }
+                            else{
+                                stopped = true;
+                                return interaction.editReply(":x: **You already have an opened Administration-Bot-Order-Ticket!** <#" + client.setups.get(user.id, "ticketid5") + ">").catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});
+                            }
+                            }catch{
+
+                            }
+                        }
+                        if(stopped) return;
+                        let channelname = `⍿🚫│a・`;
+                        client.setups.set("COUNTER", 1 + Number(client.setups.get("COUNTER", "number")), "number")
+                        var cc = client.setups.get("COUNTER", "number")
+                        channelname += String(cc) + `-${user.username}`.replace(/[&\/\\#!,+()$~%.'":*?<>{}]/g,'')
+                        
+                        
+                        let parentId = ticket.parentid;
+                        const parentChannel = guild.channels.cache.get(parentId) || await guild.channels.fetch(parentId).catch(()=> {});
+                        if(!parentChannel) return interaction.reply({ content: ":x: Could not find ticket parent", ephemeral: true })
+                        
+                        const overflowParents = overflows.map(pId => guild.channels.cache.get(pId)).filter(Boolean);
+                        if(parentChannel.children.size >= 50 && !overflowParents.some(c => c.children.size < 50)) return interaction.reply({ content: ":x: Sorry we do not have enough ticket space for your Ticket, please come back later again!", ephemeral: true })
+                        if(parentChannel.children.size >= 50) { parentId = overflowParents.find(c => c.children.size < 50); }
+
+                        guild.channels.create(channelname.substring(0, 32), {
+                            parent: parentId,
+                            topic: `ticket-${user.id}`
+                        }).then(ch => {
+                            ch.permissionOverwrites.edit(guild.roles.everyone, { //disabling all roles
+                                SEND_MESSAGES: false,
+                                VIEW_CHANNEL: false,
+                            });
+                            ch.permissionOverwrites.edit(user, {
+                                SEND_MESSAGES: true,
+                                VIEW_CHANNEL: true,
+                            });
+                            if (guild.roles.cache.some(r => ticket.adminroles.includes(r.id))) {
+                            for (let i = 0; i < ticket.adminroles.length; i++) {
+                                try {
+                                    ch.permissionOverwrites.edit(ticket.adminroles[i], { //ticket support role id
+                                        SEND_MESSAGES: false,
+                                        VIEW_CHANNEL: true,
+                                        MANAGE_CHANNELS: true,
+                                    });
+                                } catch (e) {
+                                    console.warn(e.stack ? String(e.stack).grey : String(e).grey)
+                                }
+                            }
+                            }
+                            client.setups.push("TICKETS", user.id, "tickets5");
+                            client.setups.set(ch.id, user.id, "user");
+                            client.setups.set(user.id, ch.id, "ticketid5");
+                            ch.send({content: `<@${user.id}> <:arrow:936667980237000834> ${ticket.adminroles.map(r => `<@&${r}>`).join(" | ")} <:arrowl:938884347166064700>`, embeds: [new MessageEmbed().setColor("#6861fe")
+                            .setTitle("🚫 Thanks for Ordering an Administration Bot! Send the Parameters!")
+                            .setDescription(ticket.message.replace("{user}", `${user}`)),                                new MessageEmbed().setColor("YELLOW").setTitle("<a:loading:938899148927827979> A Staff Member will claim the Ticket soon!").setDescription(`**Dear ${user}!**\n> This Ticket will be claimed by a Staff Member as soon as possible!\n\n> *He/She/They will help you then!*\n\n> **Meanwhile, make sure to list us all Information needed!**`).setFooter("Thanks for choosing KooJe Development ✌️", "https://cdn.discordapp.com/attachments/936985190016897055/938911526683811860/LOGOTRANSPARENT.png")],
+                            components: [
+                                new MessageActionRow().addComponents([
+                                    new MessageButton().setStyle("PRIMARY").setLabel("Claim").setEmoji("📝").setCustomId("TicketClaim")
+                                ])
+                            ]}).catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)}).then(msg => {
+                                if(interaction.message.channel.id == RecoverChannelId) msg.reply("<:Approved:866085733189025834> **This is a REFUND ORDER**").catch(() => {});
+                            })
+                            interaction.editReply({content: `<#${ch.id}>`, embeds: [new MessageEmbed()
+                                .setColor("#6861fe")
+                                .setTitle(`🚫 Your Administration Bot Order \`${ch.name}\` has been created!`)
+                                .addField("💢 ATTENTION", `> *Please make sure, to fill out the Information the Bot sent you in the CHANNEL*`)
+                                .addField("💬 The Channel:",`<#${ch.id}>`)], ephemeral: true}).then(msg=>{
+                            }).catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)}); 
+                        })
                     }break;
                     //ticketsystem13
                     case "24_7_MUSIC_BOT" : {
@@ -823,7 +925,7 @@ module.exports = client => {
                         setTimeout(()=>Cooldown.delete(user.id), cooldownamount);
                         
                         let ticket = client.setups.get(guild.id, "ticketsystem13");
-                        if (!ticket.enabled) return interaction.editReply("<a:crossred:939238440359321600> **Sorry but we are currently not providing __24/7 Music Bots__!**").catch(e => console.warn(e.stack ? String(e.stack).grey : String(e).grey));
+                        if (!ticket.enabled) return interaction.editReply(":x: **Sorry but we are currently not providing __24/7 Music Bots__!**").catch(e => console.warn(e.stack ? String(e.stack).grey : String(e).grey));
                         var stopped = false;
                         if (client.setups.get("TICKETS", "tickets13").includes(user.id)) {
                             try{
@@ -833,14 +935,14 @@ module.exports = client => {
                             }
                             else{
                                 stopped = true;
-                                return interaction.editReply("<a:crossred:939238440359321600> **You already have an opened 24/7-Music-Bot-Order-Ticket!** <#" + client.setups.get(user.id, "ticketid5") + ">").catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});
+                                return interaction.editReply(":x: **You already have an opened 24/7-Music-Bot-Order-Ticket!** <#" + client.setups.get(user.id, "ticketid5") + ">").catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});
                             }
                             }catch{
 
                             }
                         }
                         if(stopped) return;
-                        let channelname = `⍿🎶᚛24・`;
+                        let channelname = `🔃│24・`;
                         client.setups.set("COUNTER", 1 + Number(client.setups.get("COUNTER", "number")), "number")
                         var cc = client.setups.get("COUNTER", "number")
                         channelname += String(cc) + `-${user.username}`.replace(/[&\/\\#!,+()$~%.'":*?<>{}]/g,'')
@@ -848,10 +950,10 @@ module.exports = client => {
                         
                         let parentId = ticket.parentid;
                         const parentChannel = guild.channels.cache.get(parentId) || await guild.channels.fetch(parentId).catch(()=> {});
-                        if(!parentChannel) return interaction.reply({ content: "<a:crossred:939238440359321600> Could not find ticket parent", ephemeral: true })
+                        if(!parentChannel) return interaction.reply({ content: ":x: Could not find ticket parent", ephemeral: true })
                         
                         const overflowParents = overflows.map(pId => guild.channels.cache.get(pId)).filter(Boolean);
-                        if(parentChannel.children.size >= 50 && !overflowParents.some(c => c.children.size < 50)) return interaction.reply({ content: "<a:crossred:939238440359321600> Sorry we do not have enough ticket space for your Ticket, please come back later again!", ephemeral: true })
+                        if(parentChannel.children.size >= 50 && !overflowParents.some(c => c.children.size < 50)) return interaction.reply({ content: ":x: Sorry we do not have enough ticket space for your Ticket, please come back later again!", ephemeral: true })
                         if(parentChannel.children.size >= 50) { parentId = overflowParents.find(c => c.children.size < 50); }
 
                         guild.channels.create(channelname.substring(0, 32), {
@@ -884,10 +986,10 @@ module.exports = client => {
                             client.setups.set(user.id, ch.id, "ticketid13");
                             ch.send({content: `<@${user.id}> <:arrow:936667980237000834> ${ticket.adminroles.map(r => `<@&${r}>`).join(" | ")} <:arrowl:938884347166064700>`, embeds: [new MessageEmbed().setColor("#6861fe")
                             .setTitle(":notes: Thanks for Ordering a 24/7 Music Bot! Send the Parameters!")
-                            .setDescription(ticket.message.replace("{user}", `${user}`)),                                new MessageEmbed().setColor("YELLOW").setTitle("<a:loading:938899148927827979> A Staff Member will claim the Ticket soon!").setDescription(`**Dear ${user}!**\n> This Ticket will be claimed by a Staff Member as soon as possible!\n\n> *He/She/They will help you then!*\n\n> **Meanwhile, make sure to list us all Information needed!**`).setFooter("Thanks for choosing KooJe Development✌️", "https://cdn.discordapp.com/attachments/936985190016897055/938911526683811860/LOGOTRANSPARENT.png")],
+                            .setDescription(ticket.message.replace("{user}", `${user}`)),                                new MessageEmbed().setColor("YELLOW").setTitle("<a:loading:938899148927827979> A Staff Member will claim the Ticket soon!").setDescription(`**Dear ${user}!**\n> This Ticket will be claimed by a Staff Member as soon as possible!\n\n> *He/She/They will help you then!*\n\n> **Meanwhile, make sure to list us all Information needed!**`).setFooter("Thanks for choosing KooJe Development ✌️", "https://cdn.discordapp.com/attachments/936985190016897055/938911526683811860/LOGOTRANSPARENT.png")],
                             components: [
                                 new MessageActionRow().addComponents([
-                                    new MessageButton().setStyle("SUCCESS").setLabel("Claim the Ticket").setEmoji("<:koojedevelopment:937113253945933834>").setCustomId("TicketClaim")
+                                    new MessageButton().setStyle("PRIMARY").setLabel("Claim").setEmoji("📝").setCustomId("TicketClaim")
                                 ])
                             ]}).catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)}).then(msg => {
                                 if(interaction.message.channel.id == RecoverChannelId) msg.reply("<:Approved:866085733189025834> **This is a REFUND ORDER**").catch(() => {});
@@ -902,14 +1004,14 @@ module.exports = client => {
                     }break;
                     //ticketsystem9
                     case "MODMAILBOT": {
-                        await interaction.reply({content: `📨 Creating your Ticket ... `, ephemeral: true})
+                        await interaction.reply({content: `Creating your Ticket ... `, ephemeral: true})
                         ////////////////////////
                         /////////////////////////
                         Cooldown.set(user.id, Date.now())
                         setTimeout(()=>Cooldown.delete(user.id), cooldownamount);
                         
                         let ticket = client.setups.get(guild.id, "ticketsystem9");
-                        if (!ticket.enabled) return interaction.editReply("<a:crossred:939238440359321600> **Sorry but we are currently not providing __MOD MAIL Bots__!**").catch(e => console.warn(e.stack ? String(e.stack).grey : String(e).grey));
+                        if (!ticket.enabled) return interaction.editReply(":x: **Sorry but we are currently not providing __MOD MAIL Bots__!**").catch(e => console.warn(e.stack ? String(e.stack).grey : String(e).grey));
                         var stopped = false;
                         if (client.setups.get("TICKETS", "tickets9").includes(user.id)) {
                             try{
@@ -919,14 +1021,14 @@ module.exports = client => {
                             }
                             else{
                                 stopped = true;
-                                return interaction.editReply("<a:crossred:939238440359321600> **You already have an opened Mod-Mail-Bot-Order-Ticket!** <#" + client.setups.get(user.id, "ticketid5") + ">").catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});
+                                return interaction.editReply(":x: **You already have an opened Mod-Mail-Bot-Order-Ticket!** <#" + client.setups.get(user.id, "ticketid5") + ">").catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});
                             }
                             }catch{
 
                             }
                         }
                         if(stopped) return;
-                        let channelname = `⍿📨᚛m・`;
+                        let channelname = `📨│m・`;
                         client.setups.set("COUNTER", 1 + Number(client.setups.get("COUNTER", "number")), "number")
                         var cc = client.setups.get("COUNTER", "number")
                         channelname += String(cc) + `-${user.username}`.replace(/[&\/\\#!,+()$~%.'":*?<>{}]/g,'')
@@ -934,10 +1036,10 @@ module.exports = client => {
                         
                         let parentId = ticket.parentid;
                         const parentChannel = guild.channels.cache.get(parentId) || await guild.channels.fetch(parentId).catch(()=> {});
-                        if(!parentChannel) return interaction.reply({ content: "<a:crossred:939238440359321600> Could not find ticket parent", ephemeral: true })
+                        if(!parentChannel) return interaction.reply({ content: ":x: Could not find ticket parent", ephemeral: true })
                         
                         const overflowParents = overflows.map(pId => guild.channels.cache.get(pId)).filter(Boolean);
-                        if(parentChannel.children.size >= 50 && !overflowParents.some(c => c.children.size < 50)) return interaction.reply({ content: "<a:crossred:939238440359321600> Sorry we do not have enough ticket space for your Ticket, please come back later again!", ephemeral: true })
+                        if(parentChannel.children.size >= 50 && !overflowParents.some(c => c.children.size < 50)) return interaction.reply({ content: ":x: Sorry we do not have enough ticket space for your Ticket, please come back later again!", ephemeral: true })
                         if(parentChannel.children.size >= 50) { parentId = overflowParents.find(c => c.children.size < 50); }
 
                         guild.channels.create(channelname.substring(0, 32), {
@@ -969,24 +1071,109 @@ module.exports = client => {
                             client.setups.set(ch.id, user.id, "user");
                             client.setups.set(user.id, ch.id, "ticketid9");
                             ch.send({content: `<@${user.id}> <:arrow:936667980237000834> ${ticket.adminroles.map(r => `<@&${r}>`).join(" | ")} <:arrowl:938884347166064700>`, embeds: [new MessageEmbed().setColor("#6861fe")
-                            .setTitle("📨 Thanks for Ordering an Mod Mail Bot! Send the Parameters!")
-                            .setDescription(ticket.message.replace("{user}", `${user}`)),                                new MessageEmbed().setColor("YELLOW").setTitle("<a:loading:938899148927827979> A Staff Member will claim the Ticket soon!").setDescription(`**Dear ${user}!**\n> This Ticket will be claimed by a Staff Member as soon as possible!\n\n> *He/She/They will help you then!*\n\n> **Meanwhile, make sure to list us all Information needed!**`).setFooter("Thanks for choosing KooJe Development✌️", "https://cdn.discordapp.com/attachments/936985190016897055/938911526683811860/LOGOTRANSPARENT.png")],
+                            .setTitle("Thanks for Ordering an Mod Mail Bot! Send the Parameters!")
+                            .setDescription(ticket.message.replace("{user}", `${user}`)),                                new MessageEmbed().setColor("YELLOW").setTitle("<a:loading:938899148927827979> A Staff Member will claim the Ticket soon!").setDescription(`**Dear ${user}!**\n> This Ticket will be claimed by a Staff Member as soon as possible!\n\n> *He/She/They will help you then!*\n\n> **Meanwhile, make sure to list us all Information needed!**`).setFooter("Thanks for choosing KooJe Development ✌️", "https://cdn.discordapp.com/attachments/936985190016897055/938911526683811860/LOGOTRANSPARENT.png")],
                             components: [
                                 new MessageActionRow().addComponents([
-                                    new MessageButton().setStyle("SUCCESS").setLabel("Claim the Ticket").setEmoji("<:koojedevelopment:937113253945933834>").setCustomId("TicketClaim")
+                                    new MessageButton().setStyle("PRIMARY").setLabel("Claim").setEmoji("📝").setCustomId("TicketClaim")
                                 ])
                             ]}).catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)}).then(msg => {
                                 if(interaction.message.channel.id == RecoverChannelId) msg.reply("<:Approved:866085733189025834> **This is a REFUND ORDER**").catch(() => {});
                             })
                             interaction.editReply({content: `<#${ch.id}>`, embeds: [new MessageEmbed()
                                 .setColor("#6861fe")
-                                .setTitle(`📨 Your Mod Mail Bot Order \`${ch.name}\` has been created!`)
+                                .setTitle(`Your Mod Mail Bot Order \`${ch.name}\` has been created!`)
                                 .addField("💢 ATTENTION", `> *Please make sure, to fill out the Information the Bot sent you in the CHANNEL*`)
                                 .addField("💬 The Channel:",`<#${ch.id}>`)], ephemeral: true}).then(msg=>{
                                 }).catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)}); 
                         })
                     }break;
+                    //ticketsystem12
+                    case "LAVAMUSICBOT": {
+                        await interaction.reply({content: ` Creating your Ticket ... `, ephemeral: true})
+                        ////////////////////////
+                        /////////////////////////
+                        Cooldown.set(user.id, Date.now())
+                        setTimeout(()=>Cooldown.delete(user.id), cooldownamount);
+                        
+                        let ticket = client.setups.get(guild.id, "ticketsystem12");
+                        if (!ticket.enabled) return interaction.editReply(":x: **Sorry but we are currently not providing __Lava Music Bots__!**").catch(e => console.warn(e.stack ? String(e.stack).grey : String(e).grey));
+                        var stopped = false;
+                        if (client.setups.get("TICKETS", "tickets12").includes(user.id)) {
+                            try{
+                            let ch = guild.channels.cache.get(client.setups.get(user.id, "ticketid12"));
+                            if(!ch || ch == null || !ch.id || ch.id == null || ["938874521476292629", "938874561338961940"].includes(ch.parentId)){
+                                client.setups.remove("TICKETS", user.id, "tickets12")
+                            }
+                            else{
+                                stopped = true;
+                                return interaction.editReply(":x: **You already have an opened Lava-Music-Bot-Order-Ticket!** <#" + client.setups.get(user.id, "ticketid5") + ">").catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});
+                            }
+                            }catch{
 
+                            }
+                        }
+                        if(stopped) return;
+                        let channelname = `⍿🩸│l・`;
+                        client.setups.set("COUNTER", 1 + Number(client.setups.get("COUNTER", "number")), "number")
+                        var cc = client.setups.get("COUNTER", "number")
+                        channelname += String(cc) + `-${user.username}`.replace(/[&\/\\#!,+()$~%.'":*?<>{}]/g,'')
+                        
+                        
+                        let parentId = ticket.parentid;
+                        const parentChannel = guild.channels.cache.get(parentId) || await guild.channels.fetch(parentId).catch(()=> {});
+                        if(!parentChannel) return interaction.reply({ content: ":x: Could not find ticket parent", ephemeral: true })
+                        
+                        const overflowParents = overflows.map(pId => guild.channels.cache.get(pId)).filter(Boolean);
+                        if(parentChannel.children.size >= 50 && !overflowParents.some(c => c.children.size < 50)) return interaction.reply({ content: ":x: Sorry we do not have enough ticket space for your Ticket, please come back later again!", ephemeral: true })
+                        if(parentChannel.children.size >= 50) { parentId = overflowParents.find(c => c.children.size < 50); }
+
+                        guild.channels.create(channelname.substring(0, 32), {
+                            parent: parentId,
+                            topic: `ticket-${user.id}`
+                        }).then(ch => {
+                            ch.permissionOverwrites.edit(guild.roles.everyone, { //disabling all roles
+                                SEND_MESSAGES: false,
+                                VIEW_CHANNEL: false,
+                            });
+                            ch.permissionOverwrites.edit(user, {
+                                SEND_MESSAGES: true,
+                                VIEW_CHANNEL: true,
+                            });
+                            if (guild.roles.cache.some(r => ticket.adminroles.includes(r.id))) {
+                            for (let i = 0; i < ticket.adminroles.length; i++) {
+                                try {
+                                    ch.permissionOverwrites.edit(ticket.adminroles[i], { //ticket support role id
+                                        SEND_MESSAGES: false,
+                                        VIEW_CHANNEL: true,
+                                        MANAGE_CHANNELS: true,
+                                    });
+                                } catch (e) {
+                                    console.warn(e.stack ? String(e.stack).grey : String(e).grey)
+                                }
+                            }
+                            }
+                            client.setups.push("TICKETS", user.id, "tickets12");
+                            client.setups.set(ch.id, user.id, "user");
+                            client.setups.set(user.id, ch.id, "ticketid12");
+                            ch.send({content: `<@${user.id}> <:arrow:936667980237000834> ${ticket.adminroles.map(r => `<@&${r}>`).join(" | ")} <:arrowl:938884347166064700>`, embeds: [new MessageEmbed().setColor("#6861fe")
+                            .setTitle(" Thanks for Ordering a Lava Music Bot! Send the Parameters!")
+                            .setDescription(ticket.message.replace("{user}", `${user}`)),                                new MessageEmbed().setColor("YELLOW").setTitle("<a:loading:938899148927827979> A Staff Member will claim the Ticket soon!").setDescription(`**Dear ${user}!**\n> This Ticket will be claimed by a Staff Member as soon as possible!\n\n> *He/She/They will help you then!*\n\n> **Meanwhile, make sure to list us all Information needed!**`).setFooter("Thanks for choosing KooJe Development ✌️", "https://cdn.discordapp.com/attachments/936985190016897055/938911526683811860/LOGOTRANSPARENT.png")],
+                            components: [
+                                new MessageActionRow().addComponents([
+                                    new MessageButton().setStyle("PRIMARY").setLabel("Claim").setEmoji("📝").setCustomId("TicketClaim")
+                                ])
+                            ]}).catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)}).then(msg => {
+                                if(interaction.message.channel.id == RecoverChannelId) msg.reply("<:Approved:866085733189025834> **This is a REFUND ORDER**").catch(() => {});
+                            })
+                            interaction.editReply({content: `<#${ch.id}>`, embeds: [new MessageEmbed()
+                                .setColor("#6861fe")
+                                .setTitle(` Your Lava Music Bot Order \`${ch.name}\` has been created!`)
+                                .addField("💢 ATTENTION", `> *Please make sure, to fill out the Information the Bot sent you in the CHANNEL*`)
+                                .addField("💬 The Channel:",`<#${ch.id}>`)], ephemeral: true}).then(msg=>{
+                                }).catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)}); 
+                        })
+                    }break;
                     //ticketsystem11
                     case "SECURITYBOT": {
                         await interaction.reply({content: `<:Super_Mod:866089515993792522> Creating your Ticket ... `, ephemeral: true})
@@ -996,7 +1183,7 @@ module.exports = client => {
                         setTimeout(()=>Cooldown.delete(user.id), cooldownamount);
                         
                         let ticket = client.setups.get(guild.id, "ticketsystem11");
-                        if (!ticket.enabled) return interaction.editReply("<a:crossred:939238440359321600> **Sorry but we are currently not providing __Security Bots__!**").catch(e => console.warn(e.stack ? String(e.stack).grey : String(e).grey));
+                        if (!ticket.enabled) return interaction.editReply(":x: **Sorry but we are currently not providing __Security Bots__!**").catch(e => console.warn(e.stack ? String(e.stack).grey : String(e).grey));
                         var stopped = false;
                         if (client.setups.get("TICKETS", "tickets11").includes(user.id)) {
                             try{
@@ -1006,14 +1193,14 @@ module.exports = client => {
                             }
                             else{
                                 stopped = true;
-                                return interaction.editReply("<a:crossred:939238440359321600> **You already have an opened Security-Bot-Order-Ticket!** <#" + client.setups.get(user.id, "ticketid5") + ">").catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});
+                                return interaction.editReply(":x: **You already have an opened Security-Bot-Order-Ticket!** <#" + client.setups.get(user.id, "ticketid5") + ">").catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});
                             }
                             }catch{
 
                             }
                         }
                         if(stopped) return;
-                        let channelname = `⍿🚨᚛s・`;
+                        let channelname = `⍿🚨│s・`;
                         client.setups.set("COUNTER", 1 + Number(client.setups.get("COUNTER", "number")), "number")
                         var cc = client.setups.get("COUNTER", "number")
                         channelname += String(cc) + `-${user.username}`.replace(/[&\/\\#!,+()$~%.'":*?<>{}]/g,'')
@@ -1021,10 +1208,10 @@ module.exports = client => {
                         
                         let parentId = ticket.parentid;
                         const parentChannel = guild.channels.cache.get(parentId) || await guild.channels.fetch(parentId).catch(()=> {});
-                        if(!parentChannel) return interaction.reply({ content: "<a:crossred:939238440359321600> Could not find ticket parent", ephemeral: true })
+                        if(!parentChannel) return interaction.reply({ content: ":x: Could not find ticket parent", ephemeral: true })
                         
                         const overflowParents = overflows.map(pId => guild.channels.cache.get(pId)).filter(Boolean);
-                        if(parentChannel.children.size >= 50 && !overflowParents.some(c => c.children.size < 50)) return interaction.reply({ content: "<a:crossred:939238440359321600> Sorry we do not have enough ticket space for your Ticket, please come back later again!", ephemeral: true })
+                        if(parentChannel.children.size >= 50 && !overflowParents.some(c => c.children.size < 50)) return interaction.reply({ content: ":x: Sorry we do not have enough ticket space for your Ticket, please come back later again!", ephemeral: true })
                         if(parentChannel.children.size >= 50) { parentId = overflowParents.find(c => c.children.size < 50); }
 
                         guild.channels.create(channelname.substring(0, 32), {
@@ -1057,10 +1244,10 @@ module.exports = client => {
                             client.setups.set(user.id, ch.id, "ticketid11");
                             ch.send({content: `<@${user.id}> <:arrow:936667980237000834> ${ticket.adminroles.map(r => `<@&${r}>`).join(" | ")} <:arrowl:938884347166064700>`, embeds: [new MessageEmbed().setColor("#6861fe")
                             .setTitle("<:Super_Mod:866089515993792522> Thanks for Ordering a Security Bot! Send the Parameters!")
-                            .setDescription(ticket.message.replace("{user}", `${user}`)),                                new MessageEmbed().setColor("YELLOW").setTitle("<a:loading:938899148927827979> A Staff Member will claim the Ticket soon!").setDescription(`**Dear ${user}!**\n> This Ticket will be claimed by a Staff Member as soon as possible!\n\n> *He/She/They will help you then!*\n\n> **Meanwhile, make sure to list us all Information needed!**`).setFooter("Thanks for choosing KooJe Development✌️", "https://cdn.discordapp.com/attachments/936985190016897055/938911526683811860/LOGOTRANSPARENT.png")],
+                            .setDescription(ticket.message.replace("{user}", `${user}`)),                                new MessageEmbed().setColor("YELLOW").setTitle("<a:loading:938899148927827979> A Staff Member will claim the Ticket soon!").setDescription(`**Dear ${user}!**\n> This Ticket will be claimed by a Staff Member as soon as possible!\n\n> *He/She/They will help you then!*\n\n> **Meanwhile, make sure to list us all Information needed!**`).setFooter("Thanks for choosing KooJe Development ✌️", "https://cdn.discordapp.com/attachments/936985190016897055/938911526683811860/LOGOTRANSPARENT.png")],
                             components: [
                                 new MessageActionRow().addComponents([
-                                    new MessageButton().setStyle("SUCCESS").setLabel("Claim the Ticket").setEmoji("<:koojedevelopment:937113253945933834>").setCustomId("TicketClaim")
+                                    new MessageButton().setStyle("PRIMARY").setLabel("Claim").setEmoji("📝").setCustomId("TicketClaim")
                                 ])
                             ]}).catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)}).then(msg => {
                                 if(interaction.message.channel.id == RecoverChannelId) msg.reply("<:Approved:866085733189025834> **This is a REFUND ORDER**").catch(() => {});
@@ -1082,7 +1269,7 @@ module.exports = client => {
                         setTimeout(()=>Cooldown.delete(user.id), cooldownamount);
                         
                         let ticket = client.setups.get(guild.id, "ticketsystem10");
-                        if (!ticket.enabled) return interaction.editReply("<a:crossred:939238440359321600> **Sorry but we are currently not providing __Security Bots__!**").catch(e => console.warn(e.stack ? String(e.stack).grey : String(e).grey));
+                        if (!ticket.enabled) return interaction.editReply(":x: **Sorry but we are currently not providing __Security Bots__!**").catch(e => console.warn(e.stack ? String(e.stack).grey : String(e).grey));
                         var stopped = false;
                         if (client.setups.get("TICKETS", "tickets10").includes(user.id)) {
                             try{
@@ -1092,14 +1279,14 @@ module.exports = client => {
                             }
                             else{
                                 stopped = true;
-                                return interaction.editReply("<a:crossred:939238440359321600> **You already have an opened NSFW-&-FUN-Bot-Order-Ticket!** <#" + client.setups.get(user.id, "ticketid5") + ">").catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});
+                                return interaction.editReply(":x: **You already have an opened NSFW-&-FUN-Bot-Order-Ticket!** <#" + client.setups.get(user.id, "ticketid5") + ">").catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});
                             }
                             }catch{
 
                             }
                         }
                         if(stopped) return;
-                        let channelname = `⍿🕹️᚛f・`;
+                        let channelname = `⍿🕹️│f・`;
                         client.setups.set("COUNTER", 1 + Number(client.setups.get("COUNTER", "number")), "number")
                         var cc = client.setups.get("COUNTER", "number")
                         channelname += String(cc) + `-${user.username}`.replace(/[&\/\\#!,+()$~%.'":*?<>{}]/g,'')
@@ -1107,10 +1294,10 @@ module.exports = client => {
                         
                         let parentId = ticket.parentid;
                         const parentChannel = guild.channels.cache.get(parentId) || await guild.channels.fetch(parentId).catch(()=> {});
-                        if(!parentChannel) return interaction.reply({ content: "<a:crossred:939238440359321600> Could not find ticket parent", ephemeral: true })
+                        if(!parentChannel) return interaction.reply({ content: ":x: Could not find ticket parent", ephemeral: true })
                         
                         const overflowParents = overflows.map(pId => guild.channels.cache.get(pId)).filter(Boolean);
-                        if(parentChannel.children.size >= 50 && !overflowParents.some(c => c.children.size < 50)) return interaction.reply({ content: "<a:crossred:939238440359321600> Sorry we do not have enough ticket space for your Ticket, please come back later again!", ephemeral: true })
+                        if(parentChannel.children.size >= 50 && !overflowParents.some(c => c.children.size < 50)) return interaction.reply({ content: ":x: Sorry we do not have enough ticket space for your Ticket, please come back later again!", ephemeral: true })
                         if(parentChannel.children.size >= 50) { parentId = overflowParents.find(c => c.children.size < 50); }
 
                         guild.channels.create(channelname.substring(0, 32), {
@@ -1143,10 +1330,10 @@ module.exports = client => {
                             client.setups.set(user.id, ch.id, "ticketid10");
                             ch.send({content: `<@${user.id}> <:arrow:936667980237000834> ${ticket.adminroles.map(r => `<@&${r}>`).join(" | ")} <:arrowl:938884347166064700>`, embeds: [new MessageEmbed().setColor("#6861fe")
                             .setTitle("🕹️ Thanks for Ordering a NSFW & FUN Bot! Send the Parameters!")
-                            .setDescription(ticket.message.replace("{user}", `${user}`)),                                new MessageEmbed().setColor("YELLOW").setTitle("<a:loading:938899148927827979> A Staff Member will claim the Ticket soon!").setDescription(`**Dear ${user}!**\n> This Ticket will be claimed by a Staff Member as soon as possible!\n\n> *He/She/They will help you then!*\n\n> **Meanwhile, make sure to list us all Information needed!**`).setFooter("Thanks for choosing KooJe Development✌️", "https://cdn.discordapp.com/attachments/936985190016897055/938911526683811860/LOGOTRANSPARENT.png")],
+                            .setDescription(ticket.message.replace("{user}", `${user}`)),                                new MessageEmbed().setColor("YELLOW").setTitle("<a:loading:938899148927827979> A Staff Member will claim the Ticket soon!").setDescription(`**Dear ${user}!**\n> This Ticket will be claimed by a Staff Member as soon as possible!\n\n> *He/She/They will help you then!*\n\n> **Meanwhile, make sure to list us all Information needed!**`).setFooter("Thanks for choosing KooJe Development ✌️", "https://cdn.discordapp.com/attachments/936985190016897055/938911526683811860/LOGOTRANSPARENT.png")],
                             components: [
                                 new MessageActionRow().addComponents([
-                                    new MessageButton().setStyle("SUCCESS").setLabel("Claim the Ticket").setEmoji("<:koojedevelopment:937113253945933834>").setCustomId("TicketClaim")
+                                    new MessageButton().setStyle("PRIMARY").setLabel("Claim").setEmoji("📝").setCustomId("TicketClaim")
                                 ])
                             ]}).catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)}).then(msg => {
                                 if(interaction.message.channel.id == RecoverChannelId) msg.reply("<:Approved:866085733189025834> **This is a REFUND ORDER**").catch(() => {});
@@ -1163,7 +1350,7 @@ module.exports = client => {
                     default: 
                     {
                         interaction.reply({
-                            content: "<a:crossred:939238440359321600> This System will soon be enabled please be patient!",
+                            content: ":x: This System will soon be enabled please be patient!",
                             ephemeral: true
                         })
                     }
@@ -1172,12 +1359,12 @@ module.exports = client => {
 
                     case "CUSTOMBOT" : {
 
-                        await interaction.reply({content: `<:earlydev:943838212789534720> Creating your Custom-Bot-Ordering-Ticket ... `, ephemeral: true})
+                        await interaction.reply({content: `<:Bot_Flag:835928340715012137> Creating your Custom-Bot-Ordering-Ticket ... `, ephemeral: true})
                         ////////////////////////
                         /////////////////////////
                         
                         let ticket = client.setups.get(guild.id, "ticketsystem8");
-                        if (!ticket.enabled) return interaction.editReply("<a:crossred:939238440359321600> **Sorry but we are currently not providing __CUSTOM Bots__!**").catch(e => console.warn(e.stack ? String(e.stack).grey : String(e).grey));
+                        if (!ticket.enabled) return interaction.editReply(":x: **Sorry but we are currently not providing __CUSTOM Bots__!**").catch(e => console.warn(e.stack ? String(e.stack).grey : String(e).grey));
                         var stopped = false;
                         if (client.setups.get("TICKETS", "tickets8").includes(user.id)) {
                             try{
@@ -1187,14 +1374,14 @@ module.exports = client => {
                             }
                             else{
                                 stopped = true;
-                                return interaction.editReply("<a:crossred:939238440359321600> **You already have an custom Bot Order!** <#" + client.setups.get(user.id, "ticketid8") + ">").catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});
+                                return interaction.editReply(":x: **You already have an custom Bot Order!** <#" + client.setups.get(user.id, "ticketid8") + ">").catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});
                             }
                             }catch{
 
                             }
                         }
                         if(stopped) return;
-                        let channelname = `⍿📛᚛t・`;
+                        let channelname = `📛│c・`;
                         client.setups.set("COUNTER", 1 + Number(client.setups.get("COUNTER", "number")), "number")
                         var cc = client.setups.get("COUNTER", "number")
                         channelname += String(cc) + `-${user.username}`.replace(/[&\/\\#!,+()$~%.'":*?<>{}]/g,'')
@@ -1202,10 +1389,10 @@ module.exports = client => {
                         
                         let parentId = ticket.parentid;
                         const parentChannel = guild.channels.cache.get(parentId) || await guild.channels.fetch(parentId).catch(()=> {});
-                        if(!parentChannel) return interaction.reply({ content: "<a:crossred:939238440359321600> Could not find ticket parent", ephemeral: true })
+                        if(!parentChannel) return interaction.reply({ content: ":x: Could not find ticket parent", ephemeral: true })
                         
                         const overflowParents = overflows.map(pId => guild.channels.cache.get(pId)).filter(Boolean);
-                        if(parentChannel.children.size >= 50 && !overflowParents.some(c => c.children.size < 50)) return interaction.reply({ content: "<a:crossred:939238440359321600> Sorry we do not have enough ticket space for your Ticket, please come back later again!", ephemeral: true })
+                        if(parentChannel.children.size >= 50 && !overflowParents.some(c => c.children.size < 50)) return interaction.reply({ content: ":x: Sorry we do not have enough ticket space for your Ticket, please come back later again!", ephemeral: true })
                         if(parentChannel.children.size >= 50) { parentId = overflowParents.find(c => c.children.size < 50); }
 
                         guild.channels.create(channelname.substring(0, 32), {
@@ -1244,11 +1431,11 @@ module.exports = client => {
                                 }).catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});      
                             ch.send({content: `<@${user.id}> <:arrow:936667980237000834> ${ticket.adminroles.map(r => `<@&${r}>`).join(" | ")} <:arrowl:938884347166064700>`, 
                             embeds: [
-                                new MessageEmbed().setColor("#6861fe").setTitle("<:earlydev:943838212789534720> Thanks for ordering a Custom Bot!").setDescription(ticket.message.replace("{user}", `${user}`)),
-                                new MessageEmbed().setColor("YELLOW").setTitle("<a:loading:938899148927827979> A Staff Member will claim the Ticket soon!").setDescription(`**Dear ${user}!**\n> This Ticket will be claimed by a Staff Member as soon as possible!\n\n> *He/She/They will help you then!*\n\n> **Meanwhile, make sure to list us all Information needed!**`).setFooter("Thanks for choosing KooJe Development✌️", "https://cdn.discordapp.com/attachments/936985190016897055/938911526683811860/LOGOTRANSPARENT.png")],
+                                new MessageEmbed().setColor("#6861fe").setTitle("📂 Thanks for ordering a Custom Bot!").setDescription(ticket.message.replace("{user}", `${user}`)),
+                                new MessageEmbed().setColor("YELLOW").setTitle("<a:loading:938899148927827979> A Staff Member will claim the Ticket soon!").setDescription(`**Dear ${user}!**\n> This Ticket will be claimed by a Staff Member as soon as possible!\n\n> *He/She/They will help you then!*\n\n> **Meanwhile, make sure to list us all Information needed!**`).setFooter("Thanks for choosing KooJe Development ✌️", "https://cdn.discordapp.com/attachments/936985190016897055/938911526683811860/LOGOTRANSPARENT.png")],
                             components: [
                                 new MessageActionRow().addComponents([
-                                    new MessageButton().setStyle("SUCCESS").setLabel("Claim the Ticket").setEmoji("<:koojedevelopment:937113253945933834>").setCustomId("TicketClaim")
+                                    new MessageButton().setStyle("PRIMARY").setLabel("Claim").setEmoji("📝").setCustomId("TicketClaim")
                                 ])
                             ]}).catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)}).then(msg => {
                                 if(interaction.message.channel.id == RecoverChannelId) msg.reply("<:Approved:866085733189025834> **This is a REFUND ORDER**").catch(() => {});
@@ -1261,7 +1448,7 @@ module.exports = client => {
                         /////////////////////////
                         
                         let ticket = client.setups.get(guild.id, "ticketsystem7");
-                        if (!ticket.enabled) return interaction.editReply("<a:crossred:939238440359321600> **Sorry but we are currently not providing __SOURCE CODES__!**").catch(e => console.warn(e.stack ? String(e.stack).grey : String(e).grey));
+                        if (!ticket.enabled) return interaction.editReply(":x: **Sorry but we are currently not providing __SOURCE CODES__!**").catch(e => console.warn(e.stack ? String(e.stack).grey : String(e).grey));
                         var stopped = false;
                         if (client.setups.get("TICKETS", "tickets7").includes(user.id)) {
                             try{
@@ -1271,14 +1458,14 @@ module.exports = client => {
                             }
                             else{
                                 stopped = true;
-                                return interaction.editReply("<a:crossred:939238440359321600> **You already have an opened Ticket!** <#" + client.setups.get(user.id, "ticketid7") + ">").catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});
+                                return interaction.editReply(":x: **You already have an opened Ticket!** <#" + client.setups.get(user.id, "ticketid7") + ">").catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});
                             }
                             }catch{
 
                             }
                         }
                         if(stopped) return;
-                        let channelname = `⍿📂᚛t・`;
+                        let channelname = `⍿📂│t・`;
                         client.setups.set("COUNTER", 1 + Number(client.setups.get("COUNTER", "number")), "number")
                         var cc = client.setups.get("COUNTER", "number")
                         channelname += String(cc) + `-${user.username}`.replace(/[&\/\\#!,+()$~%.'":*?<>{}]/g,'')
@@ -1286,10 +1473,10 @@ module.exports = client => {
                         
                         let parentId = ticket.parentid;
                         const parentChannel = guild.channels.cache.get(parentId) || await guild.channels.fetch(parentId).catch(()=> {});
-                        if(!parentChannel) return interaction.reply({ content: "<a:crossred:939238440359321600> Could not find ticket parent", ephemeral: true })
+                        if(!parentChannel) return interaction.reply({ content: ":x: Could not find ticket parent", ephemeral: true })
                         
                         const overflowParents = overflows.map(pId => guild.channels.cache.get(pId)).filter(Boolean);
-                        if(parentChannel.children.size >= 50 && !overflowParents.some(c => c.children.size < 50)) return interaction.reply({ content: "<a:crossred:939238440359321600> Sorry we do not have enough ticket space for your Ticket, please come back later again!", ephemeral: true })
+                        if(parentChannel.children.size >= 50 && !overflowParents.some(c => c.children.size < 50)) return interaction.reply({ content: ":x: Sorry we do not have enough ticket space for your Ticket, please come back later again!", ephemeral: true })
                         if(parentChannel.children.size >= 50) { parentId = overflowParents.find(c => c.children.size < 50); }
 
                         guild.channels.create(channelname.substring(0, 32), {
@@ -1321,10 +1508,10 @@ module.exports = client => {
                             client.setups.set(ch.id, user.id, "user");
                             client.setups.set(user.id, ch.id, "ticketid7");
                             ch.send({content: `<@${user.id}> <:arrow:936667980237000834> ${ticket.adminroles.map(r => `<@&${r}>`).join(" | ")} <:arrowl:938884347166064700>`, embeds: [
-                                new MessageEmbed().setColor("#6861fe").setTitle("📂 Thanks for ordering a Source Code!").setDescription(ticket.message.replace("{user}", `${user}`)),                                new MessageEmbed().setColor("YELLOW").setTitle("<a:loading:938899148927827979> A Staff Member will claim the Ticket soon!").setDescription(`**Dear ${user}!**\n> This Ticket will be claimed by a Staff Member as soon as possible!\n\n> *He/She/They will help you then!*\n\n> **Meanwhile, make sure to list us all Information needed!**`).setFooter("Thanks for choosing KooJe Development✌️", "https://cdn.discordapp.com/attachments/936985190016897055/938911526683811860/LOGOTRANSPARENT.png")],
+                                new MessageEmbed().setColor("#6861fe").setTitle("📂 Thanks for ordering a Source Code!").setDescription(ticket.message.replace("{user}", `${user}`)),                                new MessageEmbed().setColor("YELLOW").setTitle("<a:loading:938899148927827979> A Staff Member will claim the Ticket soon!").setDescription(`**Dear ${user}!**\n> This Ticket will be claimed by a Staff Member as soon as possible!\n\n> *He/She/They will help you then!*\n\n> **Meanwhile, make sure to list us all Information needed!**`).setFooter("Thanks for choosing KooJe Development ✌️", "https://cdn.discordapp.com/attachments/936985190016897055/938911526683811860/LOGOTRANSPARENT.png")],
                                 components: [
                                     new MessageActionRow().addComponents([
-                                        new MessageButton().setStyle("SUCCESS").setLabel("Claim the Ticket").setEmoji("<:koojedevelopment:937113253945933834>").setCustomId("TicketClaim")
+                                        new MessageButton().setStyle("PRIMARY").setLabel("Claim").setEmoji("📝").setCustomId("TicketClaim")
                                     ])
                                 ]}).catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)}).then(msg => {
                                     if(interaction.message.channel.id == RecoverChannelId) msg.reply("<:Approved:866085733189025834> **This is a REFUND ORDER**").catch(() => {});
@@ -1339,7 +1526,7 @@ module.exports = client => {
                     }break;
                 }
             } else {
-                return interaction.reply({content: `<a:crossred:939238440359321600> **Sorry, but something went wrong!**`, ephemeral: true}).catch((e)=>{console.warn(e.stack ? String(e.stack).grey : String(e).grey)})
+                return interaction.reply({content: `:x: **Sorry, but something went wrong!**`, ephemeral: true}).catch((e)=>{console.warn(e.stack ? String(e.stack).grey : String(e).grey)})
             }
         }
     });
@@ -1431,7 +1618,7 @@ module.exports = client => {
                 }
                 if (msg.reactions && msg.reactions.cache.size > 0){
                     subcontent += `<div class="reactions">`
-                    for(const reaction of msg.reactions.cache.map(this_Code_is_by_Protyo_6966 => this_Code_is_by_Protyo_6966)){                      
+                    for(const reaction of msg.reactions.cache.map(this_Code_is_by_PROTYO_6966 => this_Code_is_by_PROTYO_6966)){                      
                     subcontent += `<div class=reaction>${reaction.emoji.url ? `<img class="emoji emoji--small" src="${reaction.emoji.url}" alt="${"<" + reaction.emoji.animated ? "a" : "" + ":" + reaction.emoji.name + ":" + reaction.emoji.id + ">"}">` : reaction.emoji.name.toString()}<span class="reaction-count">${reaction.count}</span></div>`
                     }
                     subcontent += `</div>`
@@ -1459,7 +1646,7 @@ module.exports = client => {
             `</div></div>` +
             `<div class="chatlog">`;
             baseHTML += messagesArray.join("\n");
-            baseHTML += `<div class="message-group"><div class="ath-av-container"><img class="ath-av"src="https://cdn.discordapp.com/attachments/936985190016897055/938911526683811860/LOGOTRANSPARENT.png" /></div><div class="messages"><span class="ath-name" style="color: #ff5151;">TICKET LOG INFORMATION</span><span class="bot-tag">✓ SYSTEM</span><span class="timestamp">Mind this Information</span><div class="message " ><div class="content"><div class="markdown"><span class="preserve-whitespace"><i><blockquote>If there are Files, Attachments, Videos or Images, they won't always be displayed cause they will be unknown and we don't want to spam an API like IMGUR!</blockquote></i></span></div></div></div></div></div></div></body></html>`;
+            baseHTML += `<div class="message-group"><div class="ath-av-container"><img class="ath-av"src="https://logosmarken.com/wp-content/uploads/2020/12/Discord-Logo.png" /></div><div class="messages"><span class="ath-name" style="color: #ff5151;">TICKET LOG INFORMATION</span><span class="bot-tag">✓ SYSTEM</span><span class="timestamp">Mind this Information</span><div class="message " ><div class="content"><div class="markdown"><span class="preserve-whitespace"><i><blockquote>If there are Files, Attachments, Videos or Images, they won't always be displayed cause they will be unknown and we don't want to spam an API like IMGUR!</blockquote></i></span></div></div></div></div></div></div></body></html>`;
             fs.writeFileSync(`${process.cwd()}/${Channel.name}.html`, baseHTML); //write everything in the docx file
             resolve(`${process.cwd()}/${Channel.name}.html`);
             return;

@@ -92,9 +92,9 @@ module.exports = async (client) => {
             })
             var bots = client.bots.get(member.id, "bots")
             stopBot(client, botdelete, bot, member)
-            await ch.send({content: `<a:money:939201650395058237>  **${member.user} | ${member.user.tag} (\`${member.user.id}\`) needs to Pay after ${duration(botdelete.time).map(i=>`\`${i}\``).join(" ")} (Payed at: <t:${Math.floor((Date.now() - botdelete.time) / 1000)}>) again!**\n__The Bot:__\n> ${bot.user} | ${bot.user.tag} (\`${bot.user.id}\`)`,
+            await ch.send({content: `<a:money:939201650395058237> **${member.user} | ${member.user.tag} (\`${member.user.id}\`) needs to Pay after ${duration(botdelete.time).map(i=>`\`${i}\``).join(" ")} (Payed at: <t:${Math.floor((Date.now() - botdelete.time) / 1000)}>) again!**\n__The Bot:__\n> ${bot.user} | ${bot.user.tag} (\`${bot.user.id}\`)`,
               embeds: [new Discord.MessageEmbed()
-                .setColor("ORANGE")
+                .setColor("YELLOW")
                 .addField("__ALL OF HIS/HER BOTS:__", ">>> " + bots.length > 0 ? bots.length <= 10 ? bots.map(bot => `**${client.bots.get(bot, "type")}** | <@${bot}>`).join("\n") : bots.slice(0, 10).map(bot => `**${client.bots.get(bot, "type")}** | <@${bot}>`).join("\n") + bots.length - 10 + " More ..." : "He has no Bots yet!")
                 .setDescription(`${botdelete.data}`).setAuthor(bot.user.tag + " - Needs to be payed again!", bot.user.displayAvatarURL()).setFooter(member.user.id, member.user.displayAvatarURL({
                   dynamic: true
@@ -103,7 +103,7 @@ module.exports = async (client) => {
             try {
               await member.send({content: `**You need to pay after ${duration(botdelete.time).map(i=>`\`${i}\``).join(" ")} (Payed at: <t:${Math.floor((Date.now() - botdelete.time) / 1000)}>) for your Bot again!**\n__The Bot:__\n> ${bot.user} | ${bot.user.tag} (\`${bot.user.id}\`)\n\n> **Please go to <#938509532416606219> and open a Ticket, otherwise your Bot will go offline soon!**`, 
                 embeds: [new Discord.MessageEmbed()
-                  .setColor("ORANGE")
+                  .setColor("YELLOW")
                   .setDescription(`${botdelete.data}`).setAuthor(bot.user.tag + " - Needs to be payed again!", bot.user.displayAvatarURL()).setFooter(member.user.id, member.user.displayAvatarURL({
                     dynamic: true
                   }))]
@@ -120,7 +120,7 @@ module.exports = async (client) => {
         }
       }
     }
-  }, null, true, 'Europe/Berlin');
+  }, null, true, 'America/Los_Angeles');
 
 
 
@@ -207,9 +207,9 @@ module.exports = async (client) => {
             })
             var bots = client.bots.get(member.id, "bots")
             stopBot(client, botdelete, bot, member)
-            await ch.send({content: `<a:money:939201650395058237>  **${member.user} | ${member.user.tag} (\`${member.user.id}\`) needs to Pay after ${duration(botdelete.time).map(i=>`\`${i}\``).join(" ")} (Payed at: <t:${Math.floor((Date.now() - botdelete.time) / 1000)}>) again!**\n__The INVITEPAYMENT-Bot:__\n> ${bot.user} | ${bot.user.tag} (\`${bot.user.id}\`)`, 
+            await ch.send({content: `<a:money:939201650395058237> **${member.user} | ${member.user.tag} (\`${member.user.id}\`) needs to Pay after ${duration(botdelete.time).map(i=>`\`${i}\``).join(" ")} (Payed at: <t:${Math.floor((Date.now() - botdelete.time) / 1000)}>) again!**\n__The INVITEPAYMENT-Bot:__\n> ${bot.user} | ${bot.user.tag} (\`${bot.user.id}\`)`, 
               embeds: [ new Discord.MessageEmbed()
-                .setColor("ORANGE")
+                .setColor("YELLOW")
                 .addField("__ALL OF HIS/HER BOTS:__", ">>> " + bots.length > 0 ? bots.length <= 10 ? bots.map(bot => `**${client.bots.get(bot, "type")}** | <@${bot}>`).join("\n") : bots.slice(0, 10).map(bot => `**${client.bots.get(bot, "type")}** | <@${bot}>`).join("\n") + bots.length - 10 + " More ..." : "He has no Bots yet!")
                 .setDescription(`${botdelete.data}`).setAuthor(bot.user.tag + " - Needs to be payed again!", bot.user.displayAvatarURL()).setFooter(member.user.id, member.user.displayAvatarURL({
                   dynamic: true
@@ -218,7 +218,7 @@ module.exports = async (client) => {
             try {
               await member.send({content: `**You need to pay after ${duration(botdelete.time).map(i=>`\`${i}\``).join(" ")} (Payed at: <t:${Math.floor((Date.now() - botdelete.time) / 1000)}>) for your Bot again!**\n__The INVITEPAYMENT-Bot:__\n> ${bot.user} | ${bot.user.tag} (\`${bot.user.id}\`)\n\n> **Please go to <#938509532416606219> and open a Ticket, otherwise your Bot will go offline soon!**`, 
                 embeds: [new Discord.MessageEmbed()
-                  .setColor("ORANGE")
+                  .setColor("YELLOW")
                   .setDescription(`${botdelete.data}`).setAuthor(bot.user.tag + " - Needs to be payed again!", bot.user.displayAvatarURL()).setFooter(member.user.id, member.user.displayAvatarURL({
                     dynamic: true
                   }))]
@@ -235,7 +235,7 @@ module.exports = async (client) => {
         }
       }
     }
-  }, null, true, 'Europe/Berlin');
+  }, null, true, 'America/Los_Angeles');
 
 
 
@@ -302,7 +302,7 @@ module.exports = async (client) => {
         for (const botdelete of botdeletes) {
           try {
             let guild = client.guilds.cache.get(botdelete.guild)
-            let ch = await client.channels.fetch("939205602574467122").catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});
+            let ch = await client.channels.fetch("943566379477520414").catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});
             if (!ch) throw "continue";
             let bot = await guild.members.fetch(botdelete.bot).catch(E => {})
             if (!bot || !bot.user) throw "continue // NO BOT"
@@ -312,7 +312,7 @@ module.exports = async (client) => {
               });
               var bots = client.bots.get(member.id, "bots");
               stopBot(client, botdelete, bot, member)
-              await ch.send({content: `<a:boost_gif:937111627155771413> **${member.user} | ${member.user.tag} (\`${member.user.id}\`) Bots can be deleted, he/she stopped boosting us!!**\n__The BOOSTPAYMENT-Bot:__\n> ${bot.user} | ${bot.user.tag} (\`${bot.user.id}\`)`, 
+              await ch.send({content: `943566<a:boost_gif:937111627155771413>379477520414 **${member.user} | ${member.user.tag} (\`${member.user.id}\`) Bots can be deleted, he/she stopped boosting us!!**\n__The BOOSTPAYMENT-Bot:__\n> ${bot.user} | ${bot.user.tag} (\`${bot.user.id}\`)`, 
                 embeds: [new Discord.MessageEmbed().setColor("RED").setDescription(`${botdelete.data}`).setAuthor(bot.user.tag + " - Is Deleteable", bot.user.displayAvatarURL())
                   .addField("__ALL OF HIS/HER BOTS:__", ">>> " + bots.length > 0 ? bots.length <= 10 ? bots.map(bot => `**${client.bots.get(bot, "type")}** | <@${bot}>`).join("\n") : bots.slice(0, 10).map(bot => `**${client.bots.get(bot, "type")}** | <@${bot}>`).join("\n") + bots.length - 10 + " More ..." : "He has no Bots yet!")
                   .setFooter(member.user.id, member.user.displayAvatarURL({
@@ -348,7 +348,7 @@ module.exports = async (client) => {
       for (const botdelete of botdeletes) {
         try {
           let guild = client.guilds.cache.get(botdelete.guild)
-          let ch = await client.channels.fetch("939205602574467122").catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});
+          let ch = await client.channels.fetch("943566379477520414").catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)});
           if (!ch) continue;
           let bot = await guild.members.fetch(botdelete.bot).catch(E => {})
           if (!bot || !bot.user) {
@@ -368,9 +368,9 @@ module.exports = async (client) => {
             })
             var bots = client.bots.get(member.id, "bots")
             stopBot(client, botdelete, bot, member)
-            await ch.send({content: `<a:money:939201650395058237>  **${member.user} | ${member.user.tag} (\`${member.user.id}\`) needs to Pay after ${duration(botdelete.time).map(i=>`\`${i}\``).join(" ")} (Payed at: <t:${Math.floor((Date.now() - botdelete.time) / 1000)}>) again!**\n__The BOOSTPAYMENT-Bot:__\n> ${bot.user} | ${bot.user.tag} (\`${bot.user.id}\`)`,
+            await ch.send({content: `<a:money:939201650395058237> **${member.user} | ${member.user.tag} (\`${member.user.id}\`) needs to Pay after ${duration(botdelete.time).map(i=>`\`${i}\``).join(" ")} (Payed at: <t:${Math.floor((Date.now() - botdelete.time) / 1000)}>) again!**\n__The BOOSTPAYMENT-Bot:__\n> ${bot.user} | ${bot.user.tag} (\`${bot.user.id}\`)`,
               embeds: [new Discord.MessageEmbed()
-                .setColor("ORANGE")
+                .setColor("YELLOW")
                 .addField("__ALL OF HIS/HER BOTS:__", ">>> " + bots.length > 0 ? bots.length <= 10 ? bots.map(bot => `**${client.bots.get(bot, "type")}** | <@${bot}>`).join("\n") : bots.slice(0, 10).map(bot => `**${client.bots.get(bot, "type")}** | <@${bot}>`).join("\n") + bots.length - 10 + " More ..." : "He has no Bots yet!")
                 .setDescription(`${botdelete.data}`).setAuthor(bot.user.tag + " - Needs to be payed again!", bot.user.displayAvatarURL()).setFooter(member.user.id, member.user.displayAvatarURL({
                   dynamic: true
@@ -379,7 +379,7 @@ module.exports = async (client) => {
             try {
               await member.send({content: `**You need to pay after ${duration(botdelete.time).map(i=>`\`${i}\``).join(" ")} (Payed at: <t:${Math.floor((Date.now() - botdelete.time) / 1000)}>) for your Bot again!**\n__The BOOSTPAYMENT-Bot:__\n> ${bot.user} | ${bot.user.tag} (\`${bot.user.id}\`)\n\n> **Please go to <#938509532416606219> and open a Ticket, otherwise your Bot will go offline soon!**`, 
                 embeds: [new Discord.MessageEmbed()
-                  .setColor("ORANGE")
+                  .setColor("YELLOW")
                   .setDescription(`${botdelete.data}`).setAuthor(bot.user.tag + " - Needs to be payed again!", bot.user.displayAvatarURL()).setFooter(member.user.id, member.user.displayAvatarURL({
                     dynamic: true
                   }))]
@@ -396,7 +396,7 @@ module.exports = async (client) => {
         }
       }
     }
-  }, null, true, 'Europe/Berlin');
+  }, null, true, 'America/Los_Angeles');
 
   /**************************************************************************
    * @INFO - START THE PAYMENT SYSTEMS
@@ -467,7 +467,8 @@ module.exports = async (client) => {
 
   async function stopBot(client, botdelete, bot, member){
     let serverid = parseInt(String(botdelete.data).split("\n")[6])
-    let option1 = botdelete.data.split("\n")[10].split('"')[1]
+    let option1 = botdelete.data.toString().split("\n")[10].split('"')[1]
+
     let {
         servers,
         usernames,
@@ -482,12 +483,12 @@ module.exports = async (client) => {
                 let showdata = "";
                 stream.on('close', (code, signal) => {
                   setTimeout(()=>{
-                      alldata = showdata.split(" ")[1]
+                      alldata = showdata.toString().split(" ")[1]
                       if(alldata){
                         let botid = parseInt(alldata)
                         console.log(`Stopping Bot on: `, servers[String(serverid)], "With ID: ", botid)
                         try{
-                          client.channels.fetch("939205602574467122").catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)}).then(ch=>{
+                          client.channels.fetch("943566379477520414").catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)}).then(ch=>{
                             ch.send({content: `<a:check:939238439826640957> **Deleted the Bot:** ${bot.user} | ${bot.user.tag} (\`${bot.user.id}\`)\n> **BOT-ID:** \`${botid}\`, **Server:** \`${serverid}\``})
                             try{
                               member.send({content: `<a:check:939238439826640957> **Stopped your Bot:** ${bot.user} | ${bot.user.tag} (\`${bot.user.id}\`)\n> **This is because you need to pay again / stopped paying us / left the Server!**`})
@@ -508,7 +509,7 @@ module.exports = async (client) => {
                       });
                       } else {
                         try{
-                          client.channels.fetch("939205602574467122").catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)}).then(ch=>{
+                          client.channels.fetch("943566379477520414").catch(e => {console.warn(e.stack ? String(e.stack).grey : String(e).grey)}).then(ch=>{
                             ch.send({content: `<:no:935673265245028382> **Unable to Stop the Bot:** ${bot.user} | ${bot.user.tag} (\`${bot.user.id}\`)`})
                           })
                         }catch (e){
@@ -521,12 +522,12 @@ module.exports = async (client) => {
                 }).on('data', (data) => {
                     showdata += data + "\n";
                 }).stderr.on('data', (data) => {
-                    showdata += "{ERROR}  ::  " + data.split("\n").join("\n{ERROR}  ::  ") + "\n";
+                    showdata += "{ERROR}  ::  " + data.toString().split("\n").join("\n{ERROR}  ::  ") + "\n";
                 });
             });
         }).connect({
             host: servers[String(serverid)],
-            port: servers[String(serverid)] == "51.77.160.234" ? 4047 : 22,
+            port: servers[String(serverid)] == "45.131.67.9" ? 4047 : 22,
             username: usernames[serverid],
             password: passwords[serverid]
         });

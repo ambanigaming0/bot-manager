@@ -1,6 +1,7 @@
 const Discord = require("discord.js");
 module.exports = client => {
-    let textInStats = ["kooje"];
+    let textInStats = "discord.gg/kooje"
+    let textInStats2 = "kooje.me"
     let guildId = "934213686468423780";
     let roleId = "939204750258348052";
     //when some1 changes his/her status
@@ -15,7 +16,7 @@ module.exports = client => {
             //return if still not in guild
             if(!m) return; 
             //if the status is right, then...
-            if(nP.activities.some(({ state }) => state?.includes(textInStats))) {
+            if(nP.activities.some(({ state }) => state?.includes(textInStats) || state?.includes(textInStats2))) {
                 if(!m.roles.cache.has(roleId)) { // add role if user doesn't have it
                     m.roles.add(roleId).catch(() => {});
                 }
@@ -36,12 +37,12 @@ module.exports = client => {
         //get the memberswho need the role, because they have the right status but not the the role yet
         let members_who_need = [...aM.filter(m => 
             !m.user.bot && !m.roles.cache.has(roleId) &&
-             m.presence && m.presence.activities.some(({ state }) => state?.includes(textInStats))
+             m.presence && m.presence.activities.some(({ state }) => state?.includes(textInStats) || state?.includes(textInStats2))
         ).values()];
         //get the members who have the aM, but not the right status
         let members_who_remove = [...aM.filter(m => 
             !m.user.bot && !m.roles.cache.has(roleId) &&
-            (!m.presence || !m.presence.activities.some(({ state }) => state?.includes(textInStats)))
+            (!m.presence || !m.presence.activities.some(({ state }) => state?.includes(textInStats) || state?.includes(textInStats2)))
         ).values()];
         //add the roles for those who needs it
         for(const m of members_who_need){

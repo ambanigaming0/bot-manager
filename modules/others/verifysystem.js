@@ -1,11 +1,11 @@
 const { MessageEmbed, MessageActionRow, MessageButton, MessageSelectMenu } = require("discord.js");
 module.exports = async (client) => {
-    const rulesChannel = "940262682068664370";
-    const verifiedRoleId = "937049846093840465"
+    const rulesChannel = "820320830868684810";
+    const verifiedRoleId = "779028739178233886"
     client.on("interactionCreate", async (interaction) => {
         if(!interaction?.isButton()) return;
         const { member, channel, message } = interaction;
-        if(channel.id == rulesChannel && interaction?.customId == "KooJeverify") {
+        if(channel.id == rulesChannel && interaction?.customId == "milratoverify") {
             if(member.roles.cache.has(verifiedRoleId)) {
                 return interaction?.reply({
                     ephemeral: true,
@@ -30,11 +30,11 @@ module.exports = async (client) => {
                 content: "**First Question:**\n> What is the __Keyword__ inside of the RULES?",
                 components: [
                     new MessageActionRow().addComponents([
-                        new MessageButton().setLabel("Key2022KooJe").setStyle("SECONDARY").setCustomId("Key2022KooJe"),
-                        new MessageButton().setLabel("KeyKooJe2022").setStyle("SECONDARY").setCustomId("KeyKooJe2022"),
-                        new MessageButton().setLabel("KeyKooJe2021").setStyle("SECONDARY").setCustomId("KeyKooJe2021"),
-                        new MessageButton().setLabel("Key2021KooJe").setStyle("SECONDARY").setCustomId("Key2021KooJe"),
-                        new MessageButton().setLabel("KeyOfKooJe").setStyle("SECONDARY").setCustomId("KeyOfKooJe"),
+                        new MessageButton().setLabel("Key2022Milrato").setStyle("SECONDARY").setCustomId("Key2022Milrato"),
+                        new MessageButton().setLabel("KeyMilrato2022").setStyle("SECONDARY").setCustomId("KeyMilrato2022"),
+                        new MessageButton().setLabel("KeyMilrato2021").setStyle("SECONDARY").setCustomId("KeyMilrato2021"),
+                        new MessageButton().setLabel("Key2021Milrato").setStyle("SECONDARY").setCustomId("Key2021Milrato"),
+                        new MessageButton().setLabel("KeyOfMilrato").setStyle("SECONDARY").setCustomId("KeyOfMilrato"),
                     ]),
                     new MessageActionRow().addComponents([
                         new MessageButton().setLabel("Cancel Verification").setStyle("DANGER").setCustomId("Cancel_Verify")
@@ -77,7 +77,7 @@ module.exports = async (client) => {
         }
         
         if(channel.id == rulesChannel && interaction?.customId.startsWith("Key")) {
-            if(interaction?.customId == "Key2022KooJe") {
+            if(interaction?.customId == "Key2022Milrato") {
                 interaction?.update({
                     ephemeral: true,
                     content: "**SECOND Question:**\n> Am I allowed to ping People?",
@@ -100,11 +100,11 @@ module.exports = async (client) => {
                     content: ":x: **WRONG KEYWORD**\n> Verification Cancelled, Make sure to Read the RULES AGAIN!\n> Tipp: ||Check my very first message!||",
                     components: [
                         new MessageActionRow().addComponents([
-                            new MessageButton().setLabel("Key2021KooJe").setStyle("DANGER").setCustomId("Key2021KooJe").setDisabled(),
-                            new MessageButton().setLabel("KeyKooJe2022").setStyle("DANGER").setCustomId("KeyKooJe2022").setDisabled(),
-                            new MessageButton().setLabel("KeyKooJe2021").setStyle("DANGER").setCustomId("KeyKooJe2021").setDisabled(),
-                            new MessageButton().setLabel("Key2022KooJe").setStyle("SUCCESS").setCustomId("Key2022KooJe").setDisabled(),
-                            new MessageButton().setLabel("KeyOfKooJe").setStyle("DANGER").setCustomId("KeyOfKooJe").setDisabled(),
+                            new MessageButton().setLabel("Key2021Milrato").setStyle("DANGER").setCustomId("Key2021Milrato").setDisabled(),
+                            new MessageButton().setLabel("KeyMilrato2022").setStyle("DANGER").setCustomId("KeyMilrato2022").setDisabled(),
+                            new MessageButton().setLabel("KeyMilrato2021").setStyle("DANGER").setCustomId("KeyMilrato2021").setDisabled(),
+                            new MessageButton().setLabel("Key2022Milrato").setStyle("SUCCESS").setCustomId("Key2022Milrato").setDisabled(),
+                            new MessageButton().setLabel("KeyOfMilrato").setStyle("DANGER").setCustomId("KeyOfMilrato").setDisabled(),
                         ])
                     ]
                 }).catch(() => {});

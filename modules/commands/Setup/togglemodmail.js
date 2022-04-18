@@ -10,7 +10,6 @@ module.exports = {
         if (message.member.roles.highest.rawPosition < message.guild.roles.cache.get(Roles.OwnerRoleId).rawPosition)
             return message.reply("<:no:935673265245028382> You are not allowed to execute this Command!");
         client.setups.set(message.guild.id, !client.setups.get(message.guild.id, "ticketsystem9.enabled"), "ticketsystem9.enabled")
-        await message.react("<:like:938142052087124008>").catch(() => {});
-        return message.reply(`> <a:check:939238439826640957> **The MODMAIL BOT ORDER SYSTEM is now: \`${client.setups.get(message.guild.id, "ticketsystem9.enabled") ? "Enabled" : "Disabled"}\`**`)
+        return message.reply(`> ✅ **The MODMAIL BOT ORDER SYSTEM is now: \`${client.setups.get(message.guild.id, "ticketsystem9.enabled") ? "Enabled" : "Disabled"}\`**`)
     }
 }

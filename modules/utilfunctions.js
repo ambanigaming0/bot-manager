@@ -38,7 +38,7 @@ function isValidTicket(channel) {
 }
 //get a bot search
 function GetBot(message, arg) {
-    var errormessage = "<a:crossred:939238440359321600> I failed finding that Bot...";
+    var errormessage = "<:no:935673265245028382> I failed finding that Bot...";
     return new Promise(async (resolve, reject) => {
         var args = arg,
             client = message.client;
@@ -49,7 +49,7 @@ function GetBot(message, arg) {
             user = await client.users.fetch(args[0])
             if (!user) return reject(errormessage)
             if (user.bot) return resolve(user);
-            return reject("<a:crossred:939238440359321600> USER IS NOT A BOT...")
+            return reject("<:no:935673265245028382> USER IS NOT A BOT...")
         } else if (!user && args[0]) {
             let alluser = await message.guild.members.fetch()
             alluser = [...alluser.values()].filter(member => member.user.bot == true).map(member => String(member.user.tag).toLowerCase())
@@ -65,17 +65,17 @@ function GetBot(message, arg) {
             user = await client.users.fetch(user.user.id)
             if (!user) return reject(errormessage)
             if (user.bot) return resolve(user);
-            return reject("<a:crossred:939238440359321600> USER IS NOT A BOT...")
+            return reject("<:no:935673265245028382> USER IS NOT A BOT...")
         } else {
             user = message.mentions.users.first() || message.author;
             if (user.bot) return resolve(user);
-            return reject("<a:crossred:939238440359321600> USER IS NOT A BOT...")
+            return reject("<:no:935673265245028382> USER IS NOT A BOT...")
         }
     })
 }
 //get a user search
 function GetUser(message, arg) {
-    var errormessage = "<a:crossred:939238440359321600> I failed finding that User...";
+    var errormessage = "<:no:935673265245028382> I failed finding that User...";
     return new Promise(async (resolve, reject) => {
         var args = arg,
             client = message.client;
@@ -189,7 +189,7 @@ function theDB(client, guild) {
     client.setups.ensure("TICKETS", {
         tickets: [], //WAITINGROOM BOT
         tickets2: [], //MUSIC BOT
-        tickets3: [], //CLAN BOT
+        tickets3: [], // BOT
         tickets4: [], //Ticket System
         tickets5: [], //Administration Bot
         tickets6: [], //RYTHM CLONE
@@ -203,7 +203,7 @@ function theDB(client, guild) {
         tickets_partnerapply: [], //Partner apply
         tickets_teamapply: [] //Team apply
     })
-    //CLAN BOT
+    //SYSTEM BOT
     client.setups.set(guild.id, {
         enabled: true,
         guildid: guild.id,
@@ -236,7 +236,7 @@ function theDB(client, guild) {
     > \`8 Invites\`, \`1€ / Month\`, \`8€ / Year\`
 
     __**Payment Methods:**__
-    > [Paypal](https://paypal.me/simonprotyo), PaySafe Card, Sofort, Boosting once or \`INVITES\`
+    > [Paypal](https://paypal.me/simonprotyo), PaySafe, Sofort, Boosting or \`INVITES\`
 
     *Someone will help you soon*`,
         adminroles: [Roles.NewSupporterRoleId, Roles.SupporterRoleId, Roles.BotCreatorRoleId]
@@ -263,7 +263,7 @@ function theDB(client, guild) {
     > *(The Color on the Left Side of Embeds)*
     > 
     > <:arrow:936667980237000834> **\` 5. \` What should be the STATUS?**
-    > *(e.g: \`!help | https://discord.gg/kooje\`)*
+    > *(e.g: \`!help | discord.gg/kooje\`)*
     > 
     > <:arrow:936667980237000834> **\` 6. \` What should be the STATUS TYPE?** 
     > *(\`PLAYING\` / \`WATCHING\` / \`LISTENING\` / \`STREAMING\` / \`COMPETING\`)*
@@ -274,7 +274,7 @@ function theDB(client, guild) {
     > \`4 Invites\`, \`0.50€ / Month\`, \`4€ / Year\`
 
     __**Payment Methods:**__
-    > [Paypal](https://paypal.me/simonprotyo), PaySafe Card, Sofort, Boosting once or \`INVITES\`
+    > [Paypal](https://paypal.me/simonprotyo), PaySafe, Sofort, Boosting or \`INVITES\`
 
     *Someone will help you soon*`,
         adminroles: [Roles.NewSupporterRoleId, Roles.SupporterRoleId, Roles.BotCreatorRoleId]
@@ -283,36 +283,36 @@ function theDB(client, guild) {
     client.setups.set(guild.id, {
         enabled: true,
         guildid: guild.id,
-        parentid: "840332200032469024",
-        message: `Hey {user}! Thanks for ordering a <:Kooje_X_Rythm:840354002747260960> **Rythm Clone**
+        parentid: "941718876016767047",
+        message: `Hey {user}! Thanks for ordering a **Rythm Clone**
 
     **Please tell us all of those Informations!** | Otherwise, we can't create your Bot quickly!
     > 
-    > <:arrow:936667980237000834> **\` 1. \` What should be the Bot Name?**
+    > 9389142823331<:arrow:936667980237000834>47257 **\` 1. \` What should be the Bot Name?**
     > *(The Bot's Username)*
     > 
-    > <:arrow:936667980237000834> **\` 2. \` What should be the PREFIX?**
+    > 9389142823331<:arrow:936667980237000834>47257 **\` 2. \` What should be the PREFIX?**
     > *(The Letter(s) Infront of each Command, e.g: \`!\`)*
     > 
-    > <:arrow:936667980237000834> **\` 3. \` What should be the AVATAR?**
+    > 9389142823331<:arrow:936667980237000834>47257 **\` 3. \` What should be the AVATAR?**
     > *(The Bot's Profile Picture)*
     > 
-    > <:arrow:936667980237000834> **\` 4. \` What should be the EMBED COLOR?**
+    > 9389142823331<:arrow:936667980237000834>47257 **\` 4. \` What should be the EMBED COLOR?**
     > *(The Color on the Left Side of Embeds)*
     > 
-    > <:arrow:936667980237000834> **\` 5. \` What should be the STATUS?**
-    > *(e.g: \`!help | https://discord.gg/kooje\`)*
+    > 9389142823331<:arrow:936667980237000834>47257 **\` 5. \` What should be the STATUS?**
+    > *(e.g: \`!help | .gg/milrato\`)*
     > 
-    > <:arrow:936667980237000834> **\` 6. \` What should be the STATUS TYPE?** 
+    > 9389142823331<:arrow:936667980237000834>47257 **\` 6. \` What should be the STATUS TYPE?** 
     > *(\`PLAYING\` / \`WATCHING\` / \`LISTENING\` / \`STREAMING\` / \`COMPETING\`)*
     > 
-    > <:arrow:936667980237000834> Do you have any wishes?
+    > 9389142823331<:arrow:936667980237000834>47257 Do you have any wishes?
 
     __**Price:**__
-    > \`5 Invites\`, \`1.5€ / Month\`, \`7.5€ / Year\`, \`25€ == SRC-Code\`
+    > \`7 Invites\`, \`2€ / Year\`, \`5€ == Lifetime\`
 
     __**Payment Methods:**__
-    > [Paypal](https://paypal.me/simonprotyo), PaySafe Card, Sofort, Boosting once or \`INVITES\`
+    > [Paypal](https://www.paypal.me/MilratoDevelopment), [PaySafe Card, Sofort, Others](https://bero-host.de/spenden/qgswlxrzgtll), \`INVITES\`
 
     *Someone will help you soon*`,
         adminroles: [Roles.NewSupporterRoleId, Roles.SupporterRoleId, Roles.BotCreatorRoleId]
@@ -326,19 +326,19 @@ function theDB(client, guild) {
     \`\`\`diff
     - Please tell us what Source Code you want to buy and with what Payment Method!
     \`\`\`
-    <:arrow:936667980237000834> **What Source Code do you want?**
+    9389142823331<:arrow:936667980237000834>47257 **What Source Code do you want?**
     __**Here is a short overview of our Prices:**__
     > <:koojedevelopment:937113253945933834> <@!734513783338434591> / <@!784364932149280778> | **\`75€\`**
     > <:24_7_Radio:867718813969678366> <@!758796384689192981> | **\`50€\`**
-    > 🕐 <@!848598637856030721> | **\`25€\`**
+    > <:Public_Waitingroom:867718814015684618> <@!848598637856030721> | **\`25€\`**
     > <:Music_Mixer:867718814325669888> <@!851512749082804285> | **\`25€\`**
-    >  <@!943180612351713360> | **\`25€\`**
-    > <:Kooje_X_Rythm:840354002747260960> <@!826082973853155359> | **\`20€\`**
+    >  <@!742672021422342165> | **\`25€\`**
+    > <@!826082973853155359> | **\`20€\`**
     > <:SocialPoster:867718813989994496> <@!855541205505015829> | **\`15€\`**
-    > <:Kooje_Global:867718814392909854> <@!858798131587448852> | **\`15€\`**
+    > <:Milrato_Global:867718814392909854> <@!858798131587448852> | **\`15€\`**
 
     __**Payment Methods:**__
-    > [Paypal](https://paypal.me/simonprotyo), PaySafe Card, Sofort, Boosting once or \`INVITES\`
+    > [Paypal](https://www.paypal.me/MilratoDevelopment), [PaySafe Card, Sofort, Others](https://bero-host.de/spenden/qgswlxrzgtll)
 
 
     The <@&${Roles.OwnerRoleId}> will help you soon! (Or a: <@&${Roles.CoOwnerRoleId}> / <@&${Roles.AdminRoleId}>)`,
@@ -369,36 +369,36 @@ function theDB(client, guild) {
     client.setups.set(guild.id, {
         enabled: true,
         guildid: guild.id,
-        parentid: "840332240160686080",
+        parentid: "941718876016767047",
         message: `Hey {user}! Thanks for ordering an 🚫 **Administration Bot**
 
     **Please tell us all of those Informations!** | Otherwise, we can't create your Bot quickly!
     > 
-    > <:arrow:936667980237000834> **\` 1. \` What should be the Bot Name?**
+    > 9389142823331<:arrow:936667980237000834>47257 **\` 1. \` What should be the Bot Name?**
     > *(The Bot's Username)*
     > 
-    > <:arrow:936667980237000834> **\` 2. \` What should be the PREFIX?**
+    > 9389142823331<:arrow:936667980237000834>47257 **\` 2. \` What should be the PREFIX?**
     > *(The Letter(s) Infront of each Command, e.g: \`!\`)*
     > 
-    > <:arrow:936667980237000834> **\` 3. \` What should be the AVATAR?**
+    > 9389142823331<:arrow:936667980237000834>47257 **\` 3. \` What should be the AVATAR?**
     > *(The Bot's Profile Picture)*
     > 
-    > <:arrow:936667980237000834> **\` 4. \` What should be the EMBED COLOR?**
+    > 9389142823331<:arrow:936667980237000834>47257 **\` 4. \` What should be the EMBED COLOR?**
     > *(The Color on the Left Side of Embeds)*
     > 
-    > <:arrow:936667980237000834> **\` 5. \` What should be the STATUS?**
-    > *(e.g: \`!help | https://discord.gg/kooje\`)*
+    > 9389142823331<:arrow:936667980237000834>47257 **\` 5. \` What should be the STATUS?**
+    > *(e.g: \`!help | .gg/milrato\`)*
     > 
-    > <:arrow:936667980237000834> **\` 6. \` What should be the STATUS TYPE?** 
+    > 9389142823331<:arrow:936667980237000834>47257 **\` 6. \` What should be the STATUS TYPE?** 
     > *(\`PLAYING\` / \`WATCHING\` / \`LISTENING\` / \`STREAMING\` / \`COMPETING\`)*
     > 
-    > <:arrow:936667980237000834> Do you have any wishes?
+    > 9389142823331<:arrow:936667980237000834>47257 Do you have any wishes?
 
     __**Price:**__
-    > \`4 Invites\`, \`1€ / Month\`, \`5€ / Year\`, \`40€ == SRC-Code\`
+    > \`5 Invites\`, \`2€ / Year\`, \`5€ == Lifetime\`
 
     __**Payment Methods:**__
-    > [Paypal](https://paypal.me/simonprotyo), PaySafe Card, Sofort, Boosting once or \`INVITES\`
+    > [Paypal](https://www.paypal.me/MilratoDevelopment), [PaySafe Card, Sofort, Others](https://bero-host.de/spenden/qgswlxrzgtll), \`INVITES\`
 
     *Someone will help you soon*`,
         adminroles: [Roles.NewSupporterRoleId, Roles.SupporterRoleId, Roles.BotCreatorRoleId]
@@ -488,31 +488,31 @@ function theDB(client, guild) {
 
     **Please tell us all of those Informations!** | Otherwise, we can't create your Bot quickly!
     > 
-    > <:arrow:936667980237000834> **\` 1. \` What should be the Bot Name?**
+    > 9389142823331<:arrow:936667980237000834>47257 **\` 1. \` What should be the Bot Name?**
     > *(The Bot's Username)*
     > 
-    > <:arrow:936667980237000834> **\` 2. \` What should be the PREFIX?**
+    > 9389142823331<:arrow:936667980237000834>47257 **\` 2. \` What should be the PREFIX?**
     > *(The Letter(s) Infront of each Command, e.g: \`!\`)*
     > 
-    > <:arrow:936667980237000834> **\` 3. \` What should be the AVATAR?**
+    > 9389142823331<:arrow:936667980237000834>47257 **\` 3. \` What should be the AVATAR?**
     > *(The Bot's Profile Picture)*
     > 
-    > <:arrow:936667980237000834> **\` 4. \` What should be the EMBED COLOR?**
+    > 9389142823331<:arrow:936667980237000834>47257 **\` 4. \` What should be the EMBED COLOR?**
     > *(The Color on the Left Side of Embeds)*
     > 
-    > <:arrow:936667980237000834> **\` 5. \` What should be the STATUS?**
-    > *(e.g: \`!help | https://discord.gg/kooje\`)*
+    > 9389142823331<:arrow:936667980237000834>47257 **\` 5. \` What should be the STATUS?**
+    > *(e.g: \`!help | .gg/milrato\`)*
     > 
-    > <:arrow:936667980237000834> **\` 6. \` What should be the STATUS TYPE?** 
+    > 9389142823331<:arrow:936667980237000834>47257 **\` 6. \` What should be the STATUS TYPE?** 
     > *(\`PLAYING\` / \`WATCHING\` / \`LISTENING\` / \`STREAMING\` / \`COMPETING\`)*
     > 
-    > <:arrow:936667980237000834> Do you have any wishes?
+    > 9389142823331<:arrow:936667980237000834>47257 Do you have any wishes?
 
     __**Price:**__
-    > \`2 Invites\`, \`0.5€ / Month\`, \`2€ / Year\`, 
+    > \`3 Invites\`, \`1.5€ / Year\`, \`3€ == Lifetime\`
 
     __**Payment Methods:**__
-    > [Paypal](paypal.me/simonprotyo), [PaySafe Card, Sofort, Others](https://bero-host.de/spenden/qgswlxrzgtll), \`INVITES\`
+    > [Paypal](https://www.paypal.me/MilratoDevelopment), [PaySafe Card, Sofort, Others](https://bero-host.de/spenden/qgswlxrzgtll), \`INVITES\`
 
     *Someone will help you soon*`,
         adminroles: [Roles.NewSupporterRoleId, Roles.SupporterRoleId, Roles.BotCreatorRoleId]
@@ -526,31 +526,31 @@ function theDB(client, guild) {
 
     **Please tell us all of those Informations!** | Otherwise, we can't create your Bot quickly!
     > 
-    > <:arrow:936667980237000834> **\` 1. \` What should be the Bot Name?**
+    > 9389142823331<:arrow:936667980237000834>47257 **\` 1. \` What should be the Bot Name?**
     > *(The Bot's Username)*
     > 
-    > <:arrow:936667980237000834> **\` 2. \` What should be the PREFIX?**
+    > 9389142823331<:arrow:936667980237000834>47257 **\` 2. \` What should be the PREFIX?**
     > *(The Letter(s) Infront of each Command, e.g: \`!\`)*
     > 
-    > <:arrow:936667980237000834> **\` 3. \` What should be the AVATAR?**
+    > 9389142823331<:arrow:936667980237000834>47257 **\` 3. \` What should be the AVATAR?**
     > *(The Bot's Profile Picture)*
     > 
-    > <:arrow:936667980237000834> **\` 4. \` What should be the EMBED COLOR?**
+    > 9389142823331<:arrow:936667980237000834>47257 **\` 4. \` What should be the EMBED COLOR?**
     > *(The Color on the Left Side of Embeds)*
     > 
-    > <:arrow:936667980237000834> **\` 5. \` What should be the STATUS?**
-    > *(e.g: \`!help | https://discord.gg/kooje\`)*
+    > 9389142823331<:arrow:936667980237000834>47257 **\` 5. \` What should be the STATUS?**
+    > *(e.g: \`!help | .gg/milrato\`)*
     > 
-    > <:arrow:936667980237000834> **\` 6. \` What should be the STATUS TYPE?** 
+    > 9389142823331<:arrow:936667980237000834>47257 **\` 6. \` What should be the STATUS TYPE?** 
     > *(\`PLAYING\` / \`WATCHING\` / \`LISTENING\` / \`STREAMING\` / \`COMPETING\`)*
     > 
-    > <:arrow:936667980237000834> Do you have any wishes?
+    > 9389142823331<:arrow:936667980237000834>47257 Do you have any wishes?
 
     __**Price:**__
-    > \`3 Invites\`, \`0.75€ / Month\`, \`2€ / Year\`, \`20€ == SRC-Code\`
+    > \`4 Invites\`, \`2€ / Year\`, \`5€ == Lifetime\`
 
     __**Payment Methods:**__
-    > [Paypal](paypal.me/simonprotyo), [PaySafe Card, Sofort, Others](https://bero-host.de/spenden/qgswlxrzgtll), \`INVITES\`
+    > [Paypal](https://www.paypal.me/MilratoDevelopment), [PaySafe Card, Sofort, Others](https://bero-host.de/spenden/qgswlxrzgtll), \`INVITES\`
 
     *Someone will help you soon*`,
         adminroles: [Roles.NewSupporterRoleId, Roles.SupporterRoleId, Roles.BotCreatorRoleId]
@@ -564,31 +564,31 @@ function theDB(client, guild) {
 
     **Please tell us all of those Informations!** | Otherwise, we can't create your Bot quickly!
     > 
-    > <:arrow:936667980237000834> **\` 1. \` What should be the Bot Name?**
+    > 9389142823331<:arrow:936667980237000834>47257 **\` 1. \` What should be the Bot Name?**
     > *(The Bot's Username)*
     > 
-    > <:arrow:936667980237000834> **\` 2. \` What should be the PREFIX?**
+    > 9389142823331<:arrow:936667980237000834>47257 **\` 2. \` What should be the PREFIX?**
     > *(The Letter(s) Infront of each Command, e.g: \`!\`)*
     > 
-    > <:arrow:936667980237000834> **\` 3. \` What should be the AVATAR?**
+    > 9389142823331<:arrow:936667980237000834>47257 **\` 3. \` What should be the AVATAR?**
     > *(The Bot's Profile Picture)*
     > 
-    > <:arrow:936667980237000834> **\` 4. \` What should be the EMBED COLOR?**
+    > 9389142823331<:arrow:936667980237000834>47257 **\` 4. \` What should be the EMBED COLOR?**
     > *(The Color on the Left Side of Embeds)*
     > 
-    > <:arrow:936667980237000834> **\` 5. \` What should be the STATUS?**
-    > *(e.g: \`!help | https://discord.gg/kooje\`)*
+    > 9389142823331<:arrow:936667980237000834>47257 **\` 5. \` What should be the STATUS?**
+    > *(e.g: \`!help | .gg/milrato\`)*
     > 
-    > <:arrow:936667980237000834> **\` 6. \` What should be the STATUS TYPE?** 
+    > 9389142823331<:arrow:936667980237000834>47257 **\` 6. \` What should be the STATUS TYPE?** 
     > *(\`PLAYING\` / \`WATCHING\` / \`LISTENING\` / \`STREAMING\` / \`COMPETING\`)*
     > 
-    > <:arrow:936667980237000834> Do you have any wishes?
+    > 9389142823331<:arrow:936667980237000834>47257 Do you have any wishes?
 
     __**Price:**__
-    > \`5 Invites\`, \`1.5€ / Month\`, \`7.5€ / Year\`, \`25€ == SRC-Code\`
+    > \`7 Invites\`, \`2€ / Year\`, \`5€ == Lifetime\`
 
     __**Payment Methods:**__
-    > [Paypal](paypal.me/simonprotyo), [PaySafe Card, Sofort, Others](https://bero-host.de/spenden/qgswlxrzgtll), \`INVITES\`
+    > [Paypal](https://www.paypal.me/MilratoDevelopment), [PaySafe Card, Sofort, Others](https://bero-host.de/spenden/qgswlxrzgtll), \`INVITES\`
 
     *Someone will help you soon*`,
         adminroles: [Roles.NewSupporterRoleId, Roles.SupporterRoleId, Roles.BotCreatorRoleId]
@@ -658,7 +658,7 @@ function theDB(client, guild) {
     > Be creative and show other information ...
 
     **NOTE:**
-    > Writing a complete Text, like a [Letter of Application]() is helpful to get accepted!`,
+    > **If it's not similar to an application letter, your application will be denied immediately!**`,
         adminroles: [Roles.AdminRoleId, Roles.ModRoleId],
     }, "ticketsystem_partnerapply");
     //TEAMAPPLY
@@ -683,10 +683,11 @@ function theDB(client, guild) {
     > Be creative and show other information ...
 
     **NOTE:**
-    > Writing a complete Text, like a [Letter of Application]() is helpful to get accepted!`,
+    > **If it's not similar to an application letter, your application will be denied immediately!**`,
         adminroles: [Roles.ChiefHumanResources, Roles.HumanResources],
     }, "ticketsystem_teamapply");
 
+    //GENERAL
     //GENERAL
     client.setups.set(guild.id, {
         enabled: true,
@@ -796,7 +797,7 @@ async function create_transcript_buffer(Messages, Channel, Guild) {
                     }
                     if (msg.reactions && msg.reactions.cache.size > 0) {
                         subcontent += `<div class="reactions">`
-                        for (const reaction of msg.reactions.cache.map(this_Code_is_by_Protyo_6966 => this_Code_is_by_Protyo_6966)) {
+                        for (const reaction of msg.reactions.cache.map(this_Code_is_by_PROTYO_6966 => this_Code_is_by_PROTYO_6966)) {
                             subcontent += `<div class=reaction>${reaction.emoji.url ? `<img class="emoji emoji--small" src="${reaction.emoji.url}" alt="${"<" + reaction.emoji.animated ? "a" : "" + ":" + reaction.emoji.name + ":" + reaction.emoji.id + ">"}">` : reaction.emoji.name.toString()}<span class="reaction-count">${reaction.count}</span></div>`
                         }
                         subcontent += `</div>`
@@ -824,7 +825,7 @@ async function create_transcript_buffer(Messages, Channel, Guild) {
                 `</div></div>` +
                 `<div class="chatlog">`;
             baseHTML += messagesArray.join("\n");
-            baseHTML += `<div class="message-group"><div class="ath-av-container"><img class="ath-av"src="https://logosmarken.com/wp-content/uploads/2020/12/Discord-Logo.png" /></div><div class="messages"><span class="ath-name" style="color: #ff5151;">TICKET INFORMATION</span><span class="bot-tag">✓ SUPPORT</span><br><span class="timestamp">Mind this Information</span><div class="message " ><div class="content"><div class="markdown"><span class="preserve-whitespace"><i><blockquote>If there are Files, Attachments, Videos or Images, they won't always be displayed cause they will be unknown and we don't want to spam an API like IMGUR!</blockquote></i></span></div></div></div></div></div></div></body></html>`;
+            baseHTML += `<div class="message-group"><div class="ath-av-container"><img class="ath-av"src="https://discord.com/assets/3437c10597c1526c3dbd98c737c2bcae.svg" /></div><div class="messages"><span class="ath-name" style="color: #ff5151;">TICKET LOG INFORMATION</span><span class="bot-tag">SUPPORT</span><span class="timestamp">Mind this Information</span><div class="message " ><div class="content"><div class="markdown"><span class="preserve-whitespace"><i><blockquote>If there are Files, Attachments, Videos or Images, they won't always be displayed cause they will be unknown and we don't want to spam an API like IMGUR!</blockquote></i></span></div></div></div></div></div></div></body></html>`;
             fs.writeFileSync(`${process.cwd()}/${Channel.name}.html`, baseHTML); //write everything in the docx file
             resolve(`${process.cwd()}/${Channel.name}.html`);
             return;
@@ -974,13 +975,13 @@ async function swap_pages2(client, message, embeds) {
     let currentPage = 0;
     let cmduser = message.author;
     if (embeds.length === 1) return message.channel.send({ embeds: [embeds[0]] }).catch(e => console.log("THIS IS TO PREVENT A CRASH"))
-    let button_back = new Discord.MessageButton().setStyle('SUCCESS').setCustomId('1').setEmoji("833802907509719130").setLabel("Back")
+    let button_back = new Discord.MessageButton().setStyle('PRIMARY').setCustomId('1').setEmoji("833802907509719130").setLabel("Back")
     let button_home = new Discord.MessageButton().setStyle('DANGER').setCustomId('2').setEmoji("🏠").setLabel("Home")
-    let button_forward = new Discord.MessageButton().setStyle('SUCCESS').setCustomId('3').setEmoji('832598861813776394').setLabel("Forward")
+    let button_forward = new Discord.MessageButton().setStyle('PRIMARY').setCustomId('3').setEmoji('832598861813776394').setLabel("Forward")
     const allbuttons = [new Discord.MessageActionRow().addComponents([button_back, button_home, button_forward])]
     //Send message with buttons
     let swapmsg = await message.channel.send({
-        content: `***Click on the __Buttons__ to swap the Pages***`,
+        content: `www.kooje.me - Help Menu`,
         embeds: [embeds[0]],
         components: allbuttons
     });
@@ -989,7 +990,7 @@ async function swap_pages2(client, message, embeds) {
     //array of all embeds, here simplified just 10 embeds with numbers 0 - 9
     collector.on('collect', async b => {
         if (b?.user.id !== message.author.id)
-            return b?.reply({ content: `<a:crossred:939238440359321600> **Only the one who typed ${config.prefix}help is allowed to react!**`, ephemeral: true })
+            return b?.reply({ content: `<:no:935673265245028382> **Only the one who typed ${config.prefix}help is allowed to react!**`, ephemeral: true })
         //page forward
         if (b?.customId == "1") {
             //b?.reply("***Swapping a PAGE FORWARD***, *please wait 2 Seconds for the next Input*", true)

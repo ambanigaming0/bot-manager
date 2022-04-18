@@ -1,5 +1,3 @@
-
-    
 {
     "Roles": {
         "FounderId": "934221436564930610",
@@ -17,13 +15,13 @@
     },
     "ticketsystem": [
         {
-            "value": "I need general help",
+            "value": "General Help",
             "description": "Get help for anything you need",
             "emoji": "❓",
             "type": "GENERAL"
         },
         {
-            "value": "I need help with my Bot",
+            "value": "Bot Help",
             "description": "Get help for your SHOP-BOT",
             "emoji": "🤖",
             "type": "HELP"
@@ -31,28 +29,28 @@
 
 
         {
-            "value": "Apply as a Staff Member",
-            "description": "Apply as a Staff Member for Kooje Development",
-            "emoji": "877653386747605032",
+            "value": "Staff Application",
+            "description": "Apply as a Staff for KooJe",
+            "emoji": "<:staff:955479654028935248>",
             "type": "TEAMAPPLY"
         },
         {
-            "value": "Apply as a Partner",
-            "description": "Make a Partnership with Kooje Development",
-            "emoji": "866089513436315698",
+            "value": "Partner Application",
+            "description": "Apply for a partnership with KooJe",
+            "emoji": "<:partner:946846491971043338>",
             "type": "PARTNERAPPLY"
         }
     ],
     "ordersystem": [    
         {
             "value": "System Bot",
-            "description": "8 Invites ・ 1€/30 Days ・ 8€/Year",
+            "description": "6 Invites ・ 1€/30 Days ・ 4€/Year",
             "emoji": "🤖",
             "type": "SYSTEMBOTS"
         },
         {
             "value": "Music Bot",
-            "description": "7 Invites ・ 1€/60 Days ・ 6€/Year",
+            "description": "7 Invites ・ 1€/60 Days ・ 3€/Year",
             "emoji": "🎵",
             "type": "MusicBots"
         },
@@ -69,29 +67,21 @@
             "description": "3 Invites ・ 1€/100 Days ・ 2€/Year",
             "emoji": "📨",
             "type": "MODMAILBOT"
-        },
-        {
-            "value": "Order a Custom Bot",
-            "description": "Prices are different",
-            "emoji": "943838212789534720",
-            "type": "CUSTOMBOT"
         }
     ],
-    
     "createbot": [
         {
             "value": "System Bot",
-            "description": "8 Invites ・ 1€/30 Days ・ 8€/Year",
+            "description": "6 Invites ・ 1€/30 Days ・ 4€/Year",
             "emoji": "🤖",
             "bottype": "SYSTEMBOTS"
         },
 
         {
             "value": "Music Bot",
-            "description": "7 Invites ・ 1€/60 Days ・ 6€/Year",
+            "description": "7 Invites ・ 1€/60 Days ・ 3€/Year",
             "emoji": "🎵",
             "bottype": "MusicBots"
         }    
     ]
-    
 }

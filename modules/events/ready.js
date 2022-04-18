@@ -7,7 +7,6 @@ var CronJob = require('cron').CronJob;
 
 
     client.on("ready", () => {
-
       
         const stringlength = 69;
         console.log("\n")
@@ -23,15 +22,15 @@ var CronJob = require('cron').CronJob;
             console.log(" [Status Update] :: ".bgCyan.red + String(counter).bgCyan.brightRed)
             switch(counter){
                 case 0: {
-                    try{client.user.setActivity(`Free Bots | kooje.eu`, {type: "PLAYING"})}catch(e){console.log(String(e))}
+                    try{client.user.setActivity(`www.kooje.me`, {type: "PLAYING"})}catch(e){console.log(String(e))}
                     counter++;
                 }break;
                 case 1: {
-                    try{client.user.setActivity(`Best Bots | kooje.eu`, {type: "PLAYING"})}catch(e){console.log(String(e))}
+                    try{client.user.setActivity(`Best Bots | kooje.me`, {type: "PLAYING"})}catch(e){console.log(String(e))}
                     counter++;
                 }break;
                 case 2: {
-                    try{client.user.setActivity(`botlist.kooje.eu | Promote your Bot`, {type: "PLAYING"})}catch(e){console.log(String(e))}
+                    try{client.user.setActivity(`botlist.kooje.me - SOON`, {type: "PLAYING"})}catch(e){console.log(String(e))}
                     counter++;
                 }break;
                 case 3: {
@@ -43,15 +42,15 @@ var CronJob = require('cron').CronJob;
                     counter++;
                 }break;
                 case 5: {
-                    try{client.user.setActivity(`Best Bots on Discord | kooje.eu`, {type: "PLAYING"})}catch(e){console.log(String(e))}
+                    try{client.user.setActivity(`Best Bots on Discord | kooje.me`, {type: "PLAYING"})}catch(e){console.log(String(e))}
                     counter++;
                 }break;
                 case 6: {
-                    try{client.user.setActivity(`Order Today! | kooje.eu`, {type: "PLAYING"})}catch(e){console.log(String(e))}
+                    try{client.user.setActivity(`Order Today! | kooje.me`, {type: "PLAYING"})}catch(e){console.log(String(e))}
                     counter=0;
                 }break;
                 default: {
-                    try{client.user.setActivity(`Free Bots | kooje.eu`, {type: "PLAYING"})}catch(e){console.log(String(e))}
+                    try{client.user.setActivity(`Free Bots | kooje.me`, {type: "PLAYING"})}catch(e){console.log(String(e))}
                     counter = 0;
                     counter++;
                 }break;
