@@ -1,6 +1,6 @@
-# botmanager
+# botmanager — the original
 
-This is the Milrato Bot Manager which I bought for fucking <b>110€</b> this is so embarrassing. Besides that idiot aka Masterious#0001 with his gay server azury with the bootstrap template website leaked it before me.
+This is the Milrato Bot Manager, which I bought for fucking <b>110€</b> this is so embarrassing. Besides that idiot aka Masterious#0001 with his gay server azury with the bootstrap template website leaked it before me.
 So here we go.
 
 
