@@ -12,4 +12,3 @@ P.S you need to join the Server to get all IDs</h2>
   <h2><a href="https://twitter.com/protyook">Twitter</a></h2>
 
 
-  <h1>Tutorial at <b>50</b> <a href="https://www.youtube.com/channel/UCztJijgov0flzyY-jFnyyGQy"> YouTube</a> followers
